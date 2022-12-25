@@ -89,7 +89,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     "fastq" "^1.6.0"
 
-"@popperjs/core@^2.11.6", "@popperjs/core@^2.3.3":
+"@popperjs/core@^2.3.3":
   "integrity" "sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw=="
   "resolved" "https://registry.npmjs.org/@popperjs/core/-/core-2.11.6.tgz"
   "version" "2.11.6"
@@ -998,11 +998,6 @@
     "obsidian" "github:obsidianmd/obsidian-api#master"
     "tslib" "2.1.0"
 
-"obsidian-svelte@^0.0.37":
-  "integrity" "sha512-UCzAmyZrZ+W9FlBKnseRtmHuQLcjwRWRA4f7rW7ZYAm5sx9LueEc/EcyFNmkeGzZi1U1UpSheUvd0Kf8ykHmWw=="
-  "resolved" "https://registry.npmjs.org/obsidian-svelte/-/obsidian-svelte-0.0.37.tgz"
-  "version" "0.0.37"
-
 "obsidian@github:obsidianmd/obsidian-api#master":
   "resolved" "git+ssh://git@github.com/obsidianmd/obsidian-api.git#902badd38ba907689f0917d7b193f7e33d1284fe"
   "version" "0.16.3"
@@ -1291,11 +1286,6 @@
   "integrity" "sha512-4QSW/VvXuqVcFZ+RhxiR8/newmwOCTlbYIezvkeN6302YFRE8cXy0naamHcjz8Y9Ce3ITTZtrHrIL0AGfyo61w=="
   "resolved" "https://registry.npmjs.org/svelte-hmr/-/svelte-hmr-0.14.12.tgz"
   "version" "0.14.12"
-
-"svelte-portal@^2.2.0":
-  "integrity" "sha512-jhtZWtD6cUE2nMw46dJ5VXWYiqnER+JH+V/BmNBQ5fNP/YdsJCpJi+DemUy9msklqGb0f+wLhJPBtKHLWQvzjg=="
-  "resolved" "https://registry.npmjs.org/svelte-portal/-/svelte-portal-2.2.0.tgz"
-  "version" "2.2.0"
 
 "svelte-portal@2.1.2":
   "integrity" "sha512-u1ONI4ZJDNhVJPDW7tH6RH1ZIzALt6kJZbF00Hz9bgNIVRlzvzimsnwf35rGFMtPFA+FYenvsTHUR815yYNc9A=="

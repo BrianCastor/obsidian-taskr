@@ -1,14 +1,18 @@
 <script lang="ts">
-    import { Menu, MenuItem } from "obsidian-svelte";
     import { allEfforts } from "../utils";
+    import {showDropdownMenu} from '../components/DropdownMenu'
 
     export let effort: number | undefined;
     export let setEffort: (effort: number | undefined) => void;
     export let size: "small" | "large" = "small"
 
     let container: HTMLDivElement;
-    let open: boolean = false;
-    let options = allEfforts();
+    let options = allEfforts().map((opt: any) => {
+        return {
+            ...opt,
+            onClick: () => setEffort(opt.value),
+        }
+    });
 
     let selectedOption: any = undefined;
 
@@ -26,19 +30,13 @@
         return "grey";
     };
 
-    function openMenu() {
-        open = true;
-    }
-    function closeMenu() {
-        open = false;
-    }
 </script>
 
 <div
     class={`chip-container ${size}`}
     style={`color:${getColor(effort)}`}
     bind:this={container}
-    on:click={() => openMenu()}
+    on:click={() => showDropdownMenu(options, container)}
 >
     <div style="font-weight:bold;">
         {#if selectedOption}
@@ -47,17 +45,6 @@
             <em>LOE</em>
         {/if}
     </div>
-    <Menu anchorEl={container} {open} onClose={() => closeMenu()}>
-        {#each options as opt (opt.label)}
-            <MenuItem
-                label={opt.label}
-                on:click={() => {
-                    setEffort(opt.value);
-                    closeMenu();
-                }}
-            />
-        {/each}
-    </Menu>
 </div>
 
 <style>

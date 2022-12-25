@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { Menu, MenuItem } from "obsidian-svelte";
-
     export let checked: boolean = false;
     export let onChange: (checked: boolean) => void;
 

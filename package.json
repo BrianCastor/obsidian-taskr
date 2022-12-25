@@ -29,11 +29,8 @@
         "vite": "^3.0.0"
     },
     "dependencies": {
-        "@popperjs/core": "^2.11.6",
         "chrono-node": "^2.4.2",
         "date-fns": "^2.29.3",
-        "obsidian-calendar-ui": "^0.4.0",
-        "obsidian-svelte": "^0.0.37",
-        "svelte-portal": "^2.2.0"
+        "obsidian-calendar-ui": "^0.4.0"
     }
 }

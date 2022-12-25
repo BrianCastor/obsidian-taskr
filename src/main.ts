@@ -1,5 +1,6 @@
 import { Plugin, TAbstractFile, TFile, type MarkdownPostProcessorContext } from 'obsidian';
 import { allTasksCache } from './cache';
+import { TaskListView } from './components/taskListView';
 import { TaskModal } from './components/taskModal';
 import { FileInterface } from './fileInterface';
 import { SettingsTab, settingsWithDefaults, type ISettings } from './settings';
@@ -28,6 +29,24 @@ export default class TaskrPlugin extends Plugin {
             callback: () => {
               new TaskModal(this.app, this).open();
             },
+        });
+
+        this.registerView(
+            'svelte-obsidian',
+            (leaf) => new TaskListView(leaf, this)
+        );
+
+        this.addRibbonIcon("list", "Today (TASKR)", async () => {
+            this.app.workspace.detachLeavesOfType('svelte-obsidian');
+    
+            await this.app.workspace.getLeaf(false).setViewState({
+              type: 'svelte-obsidian',
+              active: true,
+            });
+        
+            this.app.workspace.revealLeaf(
+              this.app.workspace.getLeavesOfType('svelte-obsidian')[0]
+            );
         });
 
         // This adds a settings tab so the user can configure various aspects of the plugin
@@ -73,7 +92,7 @@ export default class TaskrPlugin extends Plugin {
     }
 
     onunload() {
-
+        this.app.workspace.detachLeavesOfType('svelte-obsidian');
     }
 
     async loadSettings() {

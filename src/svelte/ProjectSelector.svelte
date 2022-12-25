@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Menu, MenuItem } from "obsidian-svelte";
+    import { showDropdownMenu } from "../components/DropdownMenu";
     import { allProjects } from "../utils";
 
     export let project: string | undefined;
@@ -7,21 +7,18 @@
     export let size: "small" | "large" = "small"
 
     let container: HTMLDivElement;
-    let open: boolean = false;
-    let options = allProjects()
+    let options = allProjects().map((opt: any) => {
+        return {
+            ...opt,
+            onClick: () => setProject(opt.label)
+        }
+    })
 
     let selectedOption: Record<string, string> | undefined = undefined;
 
     $ : {
         selectedOption = project ? options.find((opt: any) => opt.label === project) : undefined;
     } 
-
-    function openMenu() {
-        open = true;
-    }
-    function closeMenu() {
-        open = false;
-    }
 
     function getColor(proj: string | undefined) {
         if (!proj) return 'grey';
@@ -34,7 +31,7 @@
     class={`chip-container ${size}`}
     style={`color:${getColor(project)}`}
     bind:this={container}
-    on:click={() => openMenu()}
+    on:click={() => showDropdownMenu(options, container)}
 >
     <div>
         {#if selectedOption}
@@ -43,17 +40,6 @@
             <em>Project</em>
         {/if}
     </div>
-    <Menu anchorEl={container} {open} onClose={() => closeMenu()}>
-        {#each options as opt (opt.label)}
-            <MenuItem
-                label={opt.label}
-                on:click={() => {
-                    setProject(opt.label);
-                    closeMenu();
-                }}
-            />
-        {/each}
-    </Menu>
 </div>
 
 <style>
