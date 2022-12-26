@@ -41,36 +41,63 @@
             showing = !showing;
         }}
     >
-    <div style="flex-grow:1">
-        <span
-            class={dayLabel !== "Unscheduled"
-                ? dayLabel !== "Overdue"
-                    ? "header"
-                    : "header headerOverdue"
-                : "header headerUnscheduled"}
-        >
-            {dayLabel}
-        </span>
-        <span style={"font-size:13px;color:" + getColor(totalEffort)}
-            >&nbsp;{totalEffort.toString()}{#if hasUnknownEfforts}?{/if}m</span
-        >
-    </div>
-    <div>
+        <div style="flex-grow:1">
+            <span
+                class={dayLabel !== "Unscheduled"
+                    ? dayLabel !== "Overdue"
+                        ? "header"
+                        : "header headerOverdue"
+                    : "header headerUnscheduled"}
+            >
+                {dayLabel}
+            </span>
+            <span style={"font-size:13px;color:" + getColor(totalEffort)}
+                >&nbsp;{totalEffort.toString()}{#if hasUnknownEfforts}?{/if}m</span
+            >
+        </div>
         {#if !showing}
-            <span style="color:rgb(100,100,100);font-size:12px">{tasks.length}&nbsp;&nbsp;></span>
-        {:else}
-        <span style="color:rgb(100,100,100);font-size:12px">v</span>
+            <span style="color:rgb(100,100,100);font-size:12px">
+                {tasks.length}&nbsp;&nbsp;
+            </span>
         {/if}
-    </div>
+
+        <span class="svg-icon" style="color:grey;">
+            {#if showing}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    ><polyline points="18 15 12 9 6 15" /></svg
+                >
+            {:else}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    ><polyline points="6 9 12 15 18 9" /></svg
+                >
+            {/if}
+        </span>
     </div>
     {#if showing}
-        <div style="margin-left:14px;">
+        <div style="margin-left:10px;display:grid;grid-row-gap:12px;">
             {#each tasks as task (task.id)}
                 <div
                     style={!task.scheduled_date ? "color:grey !important" : ""}
                 >
-                    <TaskListItem {task} {plugin} hideDueDate={true} />
-                    <div style="height:14px" />
+                    <TaskListItem {task} {plugin} />
                 </div>
             {/each}
         </div>
@@ -99,12 +126,14 @@
         padding-bottom: 6px;
         background-color: rgb(20, 20, 20);
         cursor: pointer;
-        display:flex;
+        display: flex;
+        align-items: center;
     }
 
     .card2 {
         background-color: rgb(25, 25, 25);
         border-radius: 2px;
         margin-bottom: 10px;
+        padding-bottom:8px;
     }
 </style>

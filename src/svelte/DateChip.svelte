@@ -46,14 +46,13 @@
 
 <div
     class={`chip-container ${size}`}
-    style={`color:${getColor(date)}`}
     bind:this={container}
     on:click={() => showDropdownMenu(dateOptions, container)}
 >
-    <div style="margin-right:8px">
+    <div style="margin-right:8px; color:grey">
         {emoji}
     </div>
-    <span>
+    <span style={`color:${getColor(date)}`}>
         {#if date}
             {formatDateRelativeToNow(date)}
         {:else}

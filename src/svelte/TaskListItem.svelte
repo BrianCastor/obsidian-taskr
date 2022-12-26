@@ -10,8 +10,8 @@
 
     export let plugin: TaskrPlugin;
     export let task: Task;
-    export let hideDueDate: boolean = false;
 
+    let expanded: boolean = false;
     let taskContentEl: HTMLDivElement;
 
     onMount(async () => {
@@ -40,8 +40,7 @@
         task.complete = !task.complete;
         if (task.complete) {
             task.completed_date = new Date();
-        }
-        else {
+        } else {
             task.completed_date = undefined;
         }
         plugin.fileInterface.createUpdateTask(task);
@@ -62,7 +61,8 @@
     }
 
     function onSetCompletedDate(dt: Date | undefined) {
-        //Don't want this to work yet
+        task.completed_date = dt;
+        plugin.fileInterface.createUpdateTask(task);
         return;
     }
 
@@ -83,7 +83,7 @@
         //Navigate to existing leaf instead of opening in new tab
         plugin.app.workspace.iterateAllLeaves((leaf: WorkspaceLeaf) => {
             const vs = leaf.getViewState();
-            if (vs.type === 'markdown') {
+            if (vs.type === "markdown") {
                 if (vs.state.file === task.filepath()) {
                     existingLeaf = leaf;
                     return;
@@ -94,8 +94,8 @@
             plugin.app.workspace.setActiveLeaf(existingLeaf);
             return;
         }
-        
-        let leaf = plugin.app.workspace.getLeaf(true)
+
+        let leaf = plugin.app.workspace.getLeaf(true);
         leaf.openFile(file);
     }
 
@@ -108,44 +108,120 @@
 <li on:contextmenu={onClickTaskContainer} style="margin-bottom:5px">
     <div class="containerDiv">
         <div style="margin-right:12px;display:flex;align-items:center;">
-            <Checkbox checked={task.complete} onChange={() => onToggleTaskComplete()}></Checkbox>
+            <Checkbox
+                checked={task.complete}
+                onChange={() => onToggleTaskComplete()}
+            />
         </div>
         <div style="display:block;flex-grow:1">
-            <div style="display:flex; alignItems:center;flex-wrap:wrap">
-                <div bind:this={taskContentEl} on:click={() => navigateToTask()} class={task.complete ? "containerLi completed" : "containerLi"} style="margin-right:15px"/>
-                <div style="display: flex; align-items:center">
-                {#if task.completed_date}
-                    <DateChip date={task.completed_date} setDate={onSetCompletedDate} emoji={'✅'} complete={task.complete}></DateChip>
-                {:else}
-                    <DateChip date={task.scheduled_date} setDate={onSetScheduledDate} emoji={'🗓️'}></DateChip>
-                    {#if !hideDueDate}
-                    <DateChip date={task.due_date} setDate={onSetDueDate} emoji={'🕒'}></DateChip>
-                    {/if}
+            <div style="display:flex; alignItems:center;flex-wrap:wrap;row-gap:10px;">
+                <div
+                    bind:this={taskContentEl}
+                    on:click={() => navigateToTask()}
+                    class={task.complete
+                        ? "containerLi completed"
+                        : "containerLi"}
+                    style="margin-right:10px"
+                />
+                {#if !expanded}
+                    <div style="display: flex; align-items:center">
+                        {#if task.effort}
+                            <LoeChip
+                                effort={task.effort}
+                                setEffort={onSetEffort}
+                            />
+                        {/if}
+                        {#if task.project}
+                            <ProjectSelector
+                                project={task.project}
+                                setProject={onSetProject}
+                                hideText
+                            />
+                        {/if}
+                    </div>
                 {/if}
-                <LoeChip effort={task.effort} setEffort={onSetEffort}></LoeChip>
-                <ProjectSelector project={task.project} setProject={onSetProject}></ProjectSelector>
-                </div>
             </div>
         </div>
-        <!--<div>
-            <button
-                style="margin-right:15px"
-                on:click={() => onDeleteTask(task)}>❌</button
-            >
-        </div>-->
+        <div
+            class="svg-icon"
+            style="color:grey;padding-right:10px;cursor:pointer;"
+            on:click={() => (expanded = !expanded)}
+        >
+            {#if expanded}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    ><polyline points="18 15 12 9 6 15" /></svg
+                >
+            {:else}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    ><polyline points="6 9 12 15 18 9" /></svg
+                >
+            {/if}
+        </div>
     </div>
+    {#if expanded}
+        <div
+            style="margin-left:9px; margin-top:6px; padding-left:20px; padding-top:10px; padding-bottom:20px; border-left:2px solid grey"
+        >
+            <div
+                style="display:flex; alignItems:center;flex-wrap:wrap;row-gap:10px"
+            >
+                <DateChip
+                    date={task.scheduled_date}
+                    setDate={onSetScheduledDate}
+                    emoji={"ON"}
+                />
+                <DateChip
+                    date={task.due_date}
+                    setDate={onSetDueDate}
+                    emoji={"DUE"}
+                />
+                {#if task.complete}
+                    <DateChip
+                        date={task.completed_date}
+                        setDate={onSetCompletedDate}
+                        emoji={"✅"}
+                        complete={task.complete}
+                    />
+                {/if}
+                <LoeChip effort={task.effort} setEffort={onSetEffort} />
+                <ProjectSelector
+                    project={task.project}
+                    setProject={onSetProject}
+                />
+            </div>
+        </div>
+    {/if}
 </li>
 
 <style>
     .containerDiv {
-        width:100%;
-        display:flex;
-        flex-wrap:nowrap;
-        align-items:center;
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        row-gap: 10px;
     }
     .containerLi:hover {
-        background-color: rgb(1,1,1,.2);
-        cursor:pointer;
+        background-color: rgb(1, 1, 1, 0.2);
+        cursor: pointer;
     }
     .containerLi.completed {
         text-decoration: line-through;

@@ -5,6 +5,7 @@
     export let project: string | undefined;
     export let setProject: (project: string | undefined) => void;
     export let size: "small" | "large" = "small"
+    export let hideText: boolean | undefined = false;
 
     let container: HTMLDivElement;
     let options = allProjects().map((opt: any) => {
@@ -35,7 +36,11 @@
 >
     <div>
         {#if selectedOption}
-            {selectedOption.label}
+            {#if hideText && selectedOption.label && selectedOption.label.length > 0}
+                {selectedOption.label.match(/[\p{Emoji}\u200d]+/gu) ?? selectedOption.label[0]}
+            {:else}
+                {selectedOption.label}
+            {/if}
         {:else}
             <em>Project</em>
         {/if}

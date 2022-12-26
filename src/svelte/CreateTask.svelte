@@ -107,17 +107,16 @@
 
 </div>
 <div style="width:100%;margin-top:10px">
-    <div><span>{title}</span></div>
-    <div style="display:flex; alignItems:center; margin-top:5px">
-        <DateChip date={scheduled} setDate={onSetScheduledDate} emoji={"🗓️"} size="large"/>
-        <DateChip date={due} setDate={onSetDueDate} emoji={"🕒"} size="large" />
-        <LoeChip {effort} setEffort={onSetEffort} size="large" />
-        <ProjectSelector project={project} setProject={onSetProject} size="large"/>
+    <div style="display:flex; alignItems:center; margin-top:5px;flex-wrap:wrap;row-gap:10px;">
+        <DateChip date={scheduled} setDate={onSetScheduledDate} emoji={"ON"} size="normal"/>
+        <DateChip date={due} setDate={onSetDueDate} emoji={"DUE"} size="normal" />
+        <LoeChip {effort} setEffort={onSetEffort} size="small" />
+        <ProjectSelector project={project} setProject={onSetProject} size="small"/>
     </div>
 </div>
 
 <div style="width:100%;margin-top:10px">
-    <button on:click={save} style="width:100%;height:40px">Save</button>
+    <button class="button" on:click={save} style="width:100%;height:40px">Save</button>
 </div>
 
 <style>

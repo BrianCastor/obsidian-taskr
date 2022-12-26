@@ -42,10 +42,10 @@ export class Task {
     }
 
     isOverdue() {
-        if (!this.due_date) {
+        if (!this.scheduled_date) {
             return false;
         }
-        return startOfDay(new Date()) > this.due_date;
+        return startOfDay(new Date()) > this.scheduled_date;
     }
 
     filename() {
