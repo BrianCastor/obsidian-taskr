@@ -61,7 +61,7 @@
             </span>
         {/if}
 
-        <span class="svg-icon" style="color:grey;">
+        <span style="color:grey;">
             {#if showing}
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +92,7 @@
         </span>
     </div>
     {#if showing}
-        <div style="margin-left:10px;display:grid;grid-row-gap:12px;">
+        <div style="margin-left:10px;display:grid;grid-row-gap:12px;padding-bottom:8px;">
             {#each tasks as task (task.id)}
                 <div
                     style={!task.scheduled_date ? "color:grey !important" : ""}
@@ -105,35 +105,36 @@
 </div>
 
 <style>
-    .headerUnscheduled {
-        color: grey !important;
-    }
-    .headerOverdue {
-        color: rgb(250, 45, 45) !important;
-    }
-    .header {
-        display: inline;
-        text-transform: uppercase;
-        font-size: 13px;
-        color: lightgrey;
-    }
+.headerUnscheduled {
+    color: grey !important;
+}
 
-    .headerContainer {
-        padding-left: 10px;
-        padding-right: 10px;
-        padding-top: 4px;
-        margin-bottom: 12px;
-        padding-bottom: 6px;
-        background-color: rgb(20, 20, 20);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-    }
+.headerOverdue {
+    color: rgb(250, 45, 45) !important;
+}
 
-    .card2 {
-        background-color: rgb(25, 25, 25);
-        border-radius: 2px;
-        margin-bottom: 10px;
-        padding-bottom:8px;
-    }
+.header {
+    display: inline;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: lightgrey;
+}
+
+.headerContainer {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 4px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    background-color: rgb(20, 20, 20);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.card2 {
+    background-color: rgb(25, 25, 25);
+    border-radius: 2px;
+    margin-bottom: 10px;
+}
 </style>

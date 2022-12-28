@@ -143,7 +143,6 @@
             </div>
         </div>
         <div
-            class="svg-icon"
             style="color:grey;padding-right:10px;cursor:pointer;"
             on:click={() => (expanded = !expanded)}
         >
@@ -212,19 +211,19 @@
 </li>
 
 <style>
-    .containerDiv {
-        width: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        row-gap: 10px;
-    }
-    .containerLi:hover {
-        background-color: rgb(1, 1, 1, 0.2);
-        cursor: pointer;
-    }
-    .containerLi.completed {
-        text-decoration: line-through;
-        color: grey !important;
-    }
+.containerDiv {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    row-gap: 10px;
+}
+.containerLi:hover {
+    background-color: rgb(1, 1, 1, 0.2);
+    cursor: pointer;
+}
+.containerLi.completed {
+    text-decoration: line-through;
+    color: grey !important;
+}
 </style>

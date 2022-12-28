@@ -120,20 +120,6 @@
 </div>
 
 <style>
-    .hidden {
-        display: none;
-    }
-
-    label {
-        width: 150px;
-        display: inline-block;
-    }
-
-    #task-inputText {
-        width: 100%;
-        height: 40px;
-    }
-
     .task-input {
         width:100%;
         border:1px solid rgb(54, 54, 54);
