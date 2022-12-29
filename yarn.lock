@@ -2,6 +2,15 @@
 # yarn lockfile v1
 
 
+"@beyonk/svelte-datepicker@^12.0.1":
+  "integrity" "sha512-9RH88EL/dGRZwSLS0Gxt61q/VUC1QYsa2JV1TJgY7crArZRmYKY7dgRejp+VkQcctoKfnz7wZGFA52KuZEjwbQ=="
+  "resolved" "https://registry.npmjs.org/@beyonk/svelte-datepicker/-/svelte-datepicker-12.0.1.tgz"
+  "version" "12.0.1"
+  dependencies:
+    "dayjs" "^1.10.7"
+    "es6-object-assign" "^1.1.0"
+    "svelte" "^3.24.0"
+
 "@codemirror/state@^6.0.0", "@codemirror/state@^6.1.4":
   "integrity" "sha512-g+3OJuRylV5qsXuuhrc6Cvs1NQluNioepYMM2fhnpYkNk7NgX+j0AFuevKSVKzTDmDyt9+Puju+zPdHNECzCNQ=="
   "resolved" "https://registry.npmjs.org/@codemirror/state/-/state-6.1.4.tgz"
@@ -401,7 +410,12 @@
   "resolved" "https://registry.npmjs.org/date-fns/-/date-fns-2.29.3.tgz"
   "version" "2.29.3"
 
-"dayjs@^1.10.0":
+"date-picker-svelte@^2.2.5":
+  "integrity" "sha512-cexGp5ugTLQqxpjoBsn3JQOGVsBwRpeHj76dwtEPCIyc4w0m5H/Zv6GkqRJd8aJSlo2uK21Dx4QnnCh7rLVh4g=="
+  "resolved" "https://registry.npmjs.org/date-picker-svelte/-/date-picker-svelte-2.2.5.tgz"
+  "version" "2.2.5"
+
+"dayjs@^1.10.0", "dayjs@^1.10.7":
   "integrity" "sha512-zZbY5giJAinCG+7AGaw0wIhNZ6J8AhWuSXKvuc1KAyMiRsvGQWqh4L+MomvhdAYjN+lqvVCMq1I41e3YHvXkyQ=="
   "resolved" "https://registry.npmjs.org/dayjs/-/dayjs-1.11.6.tgz"
   "version" "1.11.6"
@@ -441,6 +455,11 @@
   "version" "3.0.0"
   dependencies:
     "esutils" "^2.0.2"
+
+"es6-object-assign@^1.1.0":
+  "integrity" "sha512-MEl9uirslVwqQU369iHNWZXsI8yaZYGg/D65aOgZkeyFJwHYSxilf7rQzXKI7DdDuBPrBXbfk3sl9hJhmd5AUw=="
+  "resolved" "https://registry.npmjs.org/es6-object-assign/-/es6-object-assign-1.1.0.tgz"
+  "version" "1.1.0"
 
 "es6-promise@^3.1.2":
   "integrity" "sha512-SOp9Phqvqn7jtEUxPWdWfWoLmyt2VaJ6MpvP9Comy1MceMXqE6bxvaTu4iaxpYYPzhny28Lc+M87/c2cPK6lDg=="

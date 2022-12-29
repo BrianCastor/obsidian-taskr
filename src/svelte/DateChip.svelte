@@ -9,6 +9,10 @@
     } from "date-fns";
     import { formatDateRelativeToNow } from "../date_utils";
     import {showDropdownMenu} from "../components/DropdownMenu";
+    import CalendarPopup from "./CalendarPopup.svelte";
+    import { Modal } from "obsidian";
+    import {DatePicker} from 'date-picker-svelte';
+
 
     export let date: Date | undefined;
     export let setDate: (date: Date | undefined) => void;
@@ -17,8 +21,7 @@
     export let size: ("small" | "normal" | "large") = "small"
 
     let container: HTMLDivElement;
-    let datePickerInputEl: HTMLInputElement;
-    let open: boolean = false;
+    let showCalendar: boolean = false;
     let dateOptions = [
         { label: "Today", onClick: () => (setDate(new Date()))},
         { label: "Tomorrow", onClick: () => (setDate(addDays(new Date(), 1))) },
@@ -26,7 +29,9 @@
         { label: "+3 Days", onClick: () => (setDate(addDays(new Date(), 2))) },
         { label: "+1 week", onClick: () => (setDate(addDays(new Date(), 7))) },
         { label: "+1 month", onClick: () => (setDate(addDays(new Date(), 30))) },
-        { label: "Other date", onClick: () => (datePickerInputEl.showPicker())},
+        { label: "Other date", onClick: () => {
+            renderCalendar();
+        }},
         { label: "Remove", onClick: () => (setDate(undefined))}
     ];
 
@@ -42,6 +47,31 @@
         return "rgb(230,230,230)";
     };
 
+    const renderCalendar = () => {
+        const modal = new Modal(app)
+        modal.containerEl.style.padding = '0px';
+        modal.containerEl.addClass('taskr-calendar-modal')
+        modal.onOpen = () => {
+            const { titleEl, contentEl } = modal;
+            new CalendarPopup({
+                target: contentEl,
+                props: {
+                    date:date,
+                    setDate: (dt) => {
+                        setDate(dt)
+                        modal.close()
+                    }
+                },
+                
+            })
+        }
+        modal.onClose = (): void => {
+            const { contentEl } = modal;
+            contentEl.empty();
+        };
+
+        modal.open()
+    }
 </script>
 
 <div
@@ -59,18 +89,6 @@
             &nbsp;-&nbsp;
         {/if}
     </span>
-    <input 
-        type="date"
-        bind:this={datePickerInputEl}
-        style="visibility: hidden;min-width: 0;max-width: 0;padding: 0;border: 0;"
-        on:change={(e) => {
-            let tempDateStr = e.currentTarget?.value;
-            let dt = tempDateStr ? parse(tempDateStr, 'yyyy-MM-dd', new Date()) : undefined
-            setDate(dt);
-            open = false
-        }}
-        min={format(new Date(), 'yyyy-MM-dd')}
-    />
 </div>
 
 <style>
@@ -92,5 +110,30 @@
         font-size:14px;
     }
 
+    :global(.taskr-calendar-modal .page-button) {
+        padding:0px !important;
+    }
 
+    :global(.taskr-calendar-modal .dropdown) {
+        height: 1.5rem !important;
+        padding: 0px !important;
+    }
+    
+    :global(.taskr-calendar-modal .modal-close-button) {
+        display: none !important;
+    }
+
+    :global(.taskr-calendar-modal .modal) {
+        padding: 0px !important;
+        width: auto !important;
+    }
+
+    :global(.taskr-calendar-modal) {
+        --date-picker-background: #141414;
+        --date-picker-foreground: white;
+        --date-picker-highlight-border: rgba(1,1,1,0);
+        --date-picker-highlight-shadow: cyan;
+        --date-picker-selected-color: white;
+        --date-picker-selected-background: cyan;
+    }
 </style>
