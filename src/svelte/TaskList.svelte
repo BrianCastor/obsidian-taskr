@@ -63,7 +63,7 @@
 
 <div style="display:flex;justify-content:center;">
     <div style="max-width:725px; margin:auto; flex-grow:1">
-        <div style="display:flex;column-gap:10px; row-gap:10px;">
+        <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll">
             {#if !filterParams.id}
                 <WeeklyProgressRing plugin={plugin}></WeeklyProgressRing>
                 <ProgressOnSchedule plugin={plugin}></ProgressOnSchedule>
