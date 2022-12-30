@@ -78,7 +78,7 @@
         const file = plugin.fileInterface.getTaskFileById(task.id);
         let existingLeaf = undefined;
 
-        //Navigate to existing leaf instead of opening in new tab
+        //Navigate to existing leaf instead of navigating current leaf
         plugin.app.workspace.iterateAllLeaves((leaf: WorkspaceLeaf) => {
             const vs = leaf.getViewState();
             if (vs.type === "markdown") {
@@ -93,7 +93,7 @@
             return;
         }
 
-        let leaf = plugin.app.workspace.getLeaf(true);
+        let leaf = plugin.app.workspace.getLeaf(false);
         leaf.openFile(file);
     }
 

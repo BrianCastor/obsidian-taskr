@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import type TaskrPlugin from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import TaskList from "../svelte/TaskList.svelte";
@@ -18,7 +19,7 @@ export class TaskListView extends ItemView {
     }
 
     getDisplayText(): string {
-        return "Tasks";
+        return `Tasks - ${format(new Date(), 'EEEE, MMM d')}`;
     }
 
     getIcon(): string {
