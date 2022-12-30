@@ -6,6 +6,7 @@
     import LoeChip from "./LOE_Chip.svelte";
     import ProjectSelector from "./ProjectSelector.svelte";
     import { allEfforts, allProjects } from "../utils";
+    import { parseDate } from "chrono-node/dist/locales/en";
 
     export let close: () => void;
     export let store: (task: Task) => void;
@@ -39,15 +40,26 @@
     $: {
         let text = inputEl ? inputEl.textContent || inputEl.innerText || "" : inputText;
 
+        //Remove extra spaces
+        text = text.replace(/\s+/g, " ");
+
         //Get dates
         const parsedDates: any = NLPParse(text);
-        if (parsedDates.length > 0) {
-            const parsedDate = parsedDates[0].start.date();
-            due = parsedDate;
-        }
-
-        parsedDates.forEach((parsedDate:any) => {
-            text = text.replace(parsedDate.text, "")
+        parsedDates.forEach((pd: any) => {
+            const parsedDate = pd.start.date();
+            const duePossibilities = [
+                `Due ${pd.text}`,
+                `due ${pd.text}`,
+            ]
+            const foundDue = duePossibilities.find((poss: string) => text.includes(poss))
+            if (foundDue) {
+                due = parsedDate
+                text = text.replace(foundDue, "")
+            }
+            else {
+                scheduled = parsedDate
+                text = text.replace(pd.text, "")
+            }
         })
 
         //Get projects
@@ -104,7 +116,6 @@
         bind:this={inputEl}
         on:keypress={handleKeyPress}
     ></div>
-
 </div>
 <div style="width:100%;margin-top:10px">
     <div style="display:flex; alignItems:center; margin-top:5px;flex-wrap:wrap;row-gap:10px;">
