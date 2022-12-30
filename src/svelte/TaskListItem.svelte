@@ -7,6 +7,7 @@
     import LoeChip from "./LOE_Chip.svelte";
     import Checkbox from "./Checkbox.svelte";
     import ProjectSelector from "./ProjectSelector.svelte";
+    import { slide } from "svelte/transition";
 
     export let plugin: TaskrPlugin;
     export let task: Task;
@@ -177,6 +178,7 @@
     </div>
     {#if expanded}
         <div
+            transition:slide="{{ duration: 250 }}"
             style="margin-left:9px; margin-top:6px; padding-left:20px; padding-top:10px; padding-bottom:20px; border-left:2px solid grey"
         >
             <div

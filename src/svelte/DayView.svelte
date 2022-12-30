@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Task } from "src/task";
+    import { slide } from "svelte/transition";
     import type TaskrPlugin from "../main";
     import TaskListItem from "./TaskListItem.svelte";
 
@@ -20,6 +21,14 @@
         if (eff <= 240) return "rgb(255,20,255)";
         if (eff > 240) return "red";
     };
+
+    const moveOverdueTasksToToday = () => {
+        const overDueTasks = tasks.filter((task: Task) => task.isOverdue())
+        overDueTasks.forEach((task: Task) => {
+            task.scheduled_date = new Date()
+            plugin.fileInterface.createUpdateTask(task);
+        })
+    }
 
     $: {
         totalEffort = tasks.reduce((summer: number, task: Task) => {
@@ -55,6 +64,11 @@
                 >&nbsp;{totalEffort.toString()}{#if hasUnknownEfforts}?{/if}m</span
             >
         </div>
+        {#if dayLabel === 'Overdue'}
+            <button on:click|stopPropagation={() => moveOverdueTasksToToday()} class="move-overdue-button">
+                Move to today
+            </button>
+        {/if}
         {#if !showing}
             <span style="color:rgb(100,100,100);font-size:12px">
                 {tasks.length}&nbsp;&nbsp;
@@ -92,7 +106,7 @@
         </span>
     </div>
     {#if showing}
-        <div style="margin-left:10px;display:grid;grid-row-gap:12px;padding-bottom:8px;">
+        <div transition:slide="{{ duration: 300 }}" style="margin-left:10px;display:grid;grid-row-gap:12px;padding-bottom:8px;">
             {#each tasks as task (task.id)}
                 <div
                     style={!task.scheduled_date ? "color:grey !important" : ""}
@@ -136,5 +150,16 @@
     background-color: rgb(25, 25, 25);
     border-radius: 2px;
     margin-bottom: 10px;
+}
+
+.move-overdue-button {
+    margin-right:10px;
+    height:22px;
+    font-size:11px;
+    text-transform: uppercase;
+    background-color: none;
+    border: none;
+    border-radius: 2px;
+    color: rgb(26, 213, 213);
 }
 </style>
