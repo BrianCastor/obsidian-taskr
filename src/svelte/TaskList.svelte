@@ -7,6 +7,7 @@
     import DayView from "./DayView.svelte";
     import { sortTasksByDate } from "../utils";
     import { formatDateRelativeToNow } from "../date_utils";
+    import WeeklyProgressRing from "./WeeklyProgressRing.svelte";
 
     export let plugin: TaskrPlugin;
     export let filterParams: any;
@@ -61,7 +62,12 @@
 
 <div style="display:flex;justify-content:center;">
     <div style="max-width:725px; margin:auto; flex-grow:1">
-        <ul class="contains-task-list todoist-task-list">
+        <div>
+            {#if !filterParams.id}
+                <WeeklyProgressRing plugin={plugin}></WeeklyProgressRing>
+            {/if}
+        </div>
+        <ul class="task-list-ul">
             {#if filterParams.id}
                 {#if displayTask}
                     <TaskListItem task={displayTask} {plugin} />
@@ -84,9 +90,10 @@
 </div>
 
 <style>
-    ul.todoist-task-list {
+    .task-list-ul {
         white-space: normal;
         list-style: none;
         padding-left: 0px;
+        margin: 10px 0px;
     }
 </style>
