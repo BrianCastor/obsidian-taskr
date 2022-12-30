@@ -14,6 +14,7 @@
 
     let expanded: boolean = false;
     let taskContentEl: HTMLDivElement;
+    let showDeleteConfirm: boolean = false;
 
     onMount(async () => {
         await renderMarkdown(task.title);
@@ -45,10 +46,6 @@
             task.completed_date = undefined;
         }
         plugin.fileInterface.createUpdateTask(task);
-    }
-
-    function onDeleteTask(task: Task) {
-        plugin.fileInterface.deleteTask(task);
     }
 
     function onSetDueDate(dt: Date | undefined) {
@@ -98,6 +95,19 @@
 
         let leaf = plugin.app.workspace.getLeaf(true);
         leaf.openFile(file);
+    }
+
+    function onDelete() {
+        if (!showDeleteConfirm) {
+            showDeleteConfirm = true
+            return
+        }
+
+        if (showDeleteConfirm) {
+            plugin.fileInterface.deleteTask(task);
+            showDeleteConfirm = false
+            return
+        }
     }
 
     function onClickTaskContainer(evt: MouseEvent) {
@@ -179,7 +189,7 @@
     {#if expanded}
         <div
             transition:slide="{{ duration: 250 }}"
-            style="margin-left:9px; margin-top:6px; padding-left:20px; padding-top:10px; padding-bottom:20px; border-left:2px solid grey"
+            style="margin-left:9px; margin-top:4px; padding-left:20px; padding-top:10px; padding-bottom:5px; border-left:2px solid grey"
         >
             <div
                 style="display:flex; alignItems:center;flex-wrap:wrap;row-gap:10px"
@@ -208,6 +218,14 @@
                     setProject={onSetProject}
                 />
             </div>
+            <div style="height:38px; width:100%;"></div>
+            <button on:click={() => onDelete()} style="color:rgb(250,130,130); height:26px; font-size:14px; text-decoration:uppercase">
+                {#if !showDeleteConfirm}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                {:else}
+                    Are you sure?
+                {/if}
+            </button>
         </div>
     {/if}
 </li>
