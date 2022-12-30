@@ -25,7 +25,7 @@
 
 <div class="statistic-container">
     <ProgressRing progress={percentComplete} color="cyan"></ProgressRing>
-    <div style="flex-grow:1; padding-left:15px;">
+    <div style="flex-grow:1; padding-left:10px;">
         <span style="font-size:14px">Weekly Progress</span>
         <br/>
         <span style="color:cyan;font-weight:bold;">{Math.round(hoursCompletedThisWeek * 10) / 10}/{hoursToCompleteThisWeek} HR</span>
@@ -37,7 +37,7 @@
         border-radius: 6px;
         display:flex;
         background-color:#141414;
-        max-width:190px;
+        max-width:178px;
         padding:10px;
         align-items: center;
     }

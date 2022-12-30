@@ -8,6 +8,7 @@
     import { sortTasksByDate } from "../utils";
     import { formatDateRelativeToNow } from "../date_utils";
     import WeeklyProgressRing from "./WeeklyProgressRing.svelte";
+    import ProgressOnSchedule from "./ProgressOnSchedule.svelte";
 
     export let plugin: TaskrPlugin;
     export let filterParams: any;
@@ -62,9 +63,10 @@
 
 <div style="display:flex;justify-content:center;">
     <div style="max-width:725px; margin:auto; flex-grow:1">
-        <div>
+        <div style="display:flex;column-gap:10px; row-gap:10px;">
             {#if !filterParams.id}
                 <WeeklyProgressRing plugin={plugin}></WeeklyProgressRing>
+                <ProgressOnSchedule plugin={plugin}></ProgressOnSchedule>
             {/if}
         </div>
         <ul class="task-list-ul">
