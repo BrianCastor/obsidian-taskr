@@ -39,7 +39,7 @@
         groupings = sortTasksByDate(tasks, reverse).reduce(
             (accum: any, task: Task) => {
                 const dt =
-                    task.scheduled_date || task.completed_date;
+                    task.completed_date || task.scheduled_date || task.due_date;
 
                 let relativeDateStr = dt
                     ? formatDateRelativeToNow(dt)

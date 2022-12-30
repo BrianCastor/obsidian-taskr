@@ -1,6 +1,7 @@
 import { Plugin, TAbstractFile, TFile, type MarkdownPostProcessorContext } from 'obsidian';
 import { allTasksCache } from './cache';
-import { TaskListView } from './components/taskListView';
+import { CompletedTaskListView, COMPLETED_TASK_LIST_VIEW_TYPE } from './components/completedTaskListView';
+import { TaskListView, TASK_LIST_VIEW_TYPE } from './components/taskListView';
 import { TaskModal } from './components/taskModal';
 import { FileInterface } from './fileInterface';
 import { SettingsTab, settingsWithDefaults, type ISettings } from './settings';
@@ -18,7 +19,7 @@ export default class TaskrPlugin extends Plugin {
 
         this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
-        this.addRibbonIcon('checkbox-glyph', 'New Task (TASKR)', () => {
+        this.addRibbonIcon('plus-square', 'New Task (TASKR)', () => {
             new TaskModal(this.app, this).open();
         });
 
@@ -32,20 +33,38 @@ export default class TaskrPlugin extends Plugin {
         });
 
         this.registerView(
-            'svelte-obsidian',
+            TASK_LIST_VIEW_TYPE,
             (leaf) => new TaskListView(leaf, this)
         );
 
-        this.addRibbonIcon("list", "Today (TASKR)", async () => {
-            this.app.workspace.detachLeavesOfType('svelte-obsidian');
+        this.addRibbonIcon("list-checks", "Today (TASKR)", async () => {
+            this.app.workspace.detachLeavesOfType(TASK_LIST_VIEW_TYPE);
     
             await this.app.workspace.getLeaf(false).setViewState({
-              type: 'svelte-obsidian',
+              type: TASK_LIST_VIEW_TYPE,
               active: true,
             });
         
             this.app.workspace.revealLeaf(
-              this.app.workspace.getLeavesOfType('svelte-obsidian')[0]
+              this.app.workspace.getLeavesOfType(TASK_LIST_VIEW_TYPE)[0]
+            );
+        });
+
+        this.registerView(
+            COMPLETED_TASK_LIST_VIEW_TYPE,
+            (leaf) => new CompletedTaskListView(leaf, this)
+        );
+
+        this.addRibbonIcon("medal", "Completed (TASKR)", async () => {
+            this.app.workspace.detachLeavesOfType(COMPLETED_TASK_LIST_VIEW_TYPE);
+    
+            await this.app.workspace.getLeaf(false).setViewState({
+              type: COMPLETED_TASK_LIST_VIEW_TYPE,
+              active: true,
+            });
+        
+            this.app.workspace.revealLeaf(
+              this.app.workspace.getLeavesOfType(COMPLETED_TASK_LIST_VIEW_TYPE)[0]
             );
         });
 
@@ -92,7 +111,8 @@ export default class TaskrPlugin extends Plugin {
     }
 
     onunload() {
-        this.app.workspace.detachLeavesOfType('svelte-obsidian');
+        this.app.workspace.detachLeavesOfType(TASK_LIST_VIEW_TYPE);
+        this.app.workspace.detachLeavesOfType(COMPLETED_TASK_LIST_VIEW_TYPE);
     }
 
     async loadSettings() {

@@ -2,9 +2,9 @@ import type TaskrPlugin from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import TaskList from "../svelte/TaskList.svelte";
 
-export const TASK_LIST_VIEW_TYPE = 'taskr-task-list-view';
+export const COMPLETED_TASK_LIST_VIEW_TYPE = 'taskr-completed-task-list-view';
 
-export class TaskListView extends ItemView {
+export class CompletedTaskListView extends ItemView {
     view: TaskList;
     plugin: TaskrPlugin
 
@@ -14,15 +14,15 @@ export class TaskListView extends ItemView {
     }
 
     getViewType(): string {
-        return TASK_LIST_VIEW_TYPE;
+        return COMPLETED_TASK_LIST_VIEW_TYPE;
     }
 
     getDisplayText(): string {
-        return "Tasks";
+        return "Completed Tasks";
     }
 
     getIcon(): string {
-        return "list";
+        return "medal";
     }
 
     async onOpen(): Promise<void> {
@@ -30,7 +30,9 @@ export class TaskListView extends ItemView {
             target: (this as any).contentEl,
             props: {
                 plugin: this.plugin,
-                filterParams: {}
+                filterParams: {
+                    completed: true
+                }
             } 
         });
     }
