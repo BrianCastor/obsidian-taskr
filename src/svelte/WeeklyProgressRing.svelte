@@ -11,7 +11,7 @@
 
     allTasksCache.subscribe((tasks: Task[]) => {
         tasksCompletedThisWeek = tasks.filter((task: Task) => {
-            return task.complete && task.completed_date && isThisWeek(task.completed_date)
+            return task.complete && task.completed_date && isThisWeek(task.completed_date, {weekStartsOn: 1})
         })
     })
 
