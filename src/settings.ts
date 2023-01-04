@@ -5,12 +5,14 @@ export interface ISettings {
     TasksDir: string;
     DailyBandwidth: number;
     PeopleDir: string;
+    ProjectsDir: string;
   }
   
   const defaultSettings: ISettings = {
     TasksDir: 'tasks',
     DailyBandwidth: 2,
-    PeopleDir: 'people'
+    PeopleDir: 'people',
+    ProjectsDir: 'projects'
   };
   
   export const settingsWithDefaults = (
@@ -50,6 +52,17 @@ export interface ISettings {
           text.setPlaceholder('$').setValue(this.plugin.settings.PeopleDir);
           text.inputEl.onblur = (e: FocusEvent) => {
             this.plugin.settings.PeopleDir = (e.target as HTMLInputElement).value;
+            this.plugin.saveData(this.plugin.settings);
+          };
+        });
+
+        new Setting(containerEl)
+        .setName('Projects Directory')
+        .setDesc('The vault directory in which to store projects (to link tasks to)')
+        .addText((text) => {
+          text.setPlaceholder('$').setValue(this.plugin.settings.ProjectsDir);
+          text.inputEl.onblur = (e: FocusEvent) => {
+            this.plugin.settings.ProjectsDir = (e.target as HTMLInputElement).value;
             this.plugin.saveData(this.plugin.settings);
           };
         });

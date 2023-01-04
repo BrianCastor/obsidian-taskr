@@ -15,18 +15,6 @@ export const sortTasksByDate = (tasks: Task[], reverse = false) => {
     return ts;
 }
 
-export const allProjects = (): Record<string, string>[] => {
-    return [
-        { label: '😊 Personal' },
-        { label: '💰 Career' },
-        { label: '❤️ Health' },
-        { label: '⛷️ Fitness' },
-        { label: '🏠 Apartment' },
-        { label: '👫 Social' },
-        { label: '🌊 Music' }
-    ];
-}
-
 export const allEfforts = (): any => {
     return [
         { icon: "10m", value: 10, label: "Up to 10 mins", autoSuggestTerm: 'trivial' },

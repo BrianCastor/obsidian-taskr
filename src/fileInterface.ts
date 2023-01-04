@@ -1,5 +1,6 @@
 import type TaskrPlugin from "main";
 import { TFile, type App } from "obsidian";
+import { Project } from "./project";
 import { Task } from "./task";
 
 export class FileInterface {
@@ -78,5 +79,28 @@ export class FileInterface {
         if (tf) {
             this.plugin.app.vault.delete(tf);
         }
+    }
+
+
+    getProjectFromFile = (file: TFile) => {
+        return new Project(file.basename);
+    }
+
+    getAllProjectFiles = () : TFile[] => {
+        const projectFiles = this.plugin.app.vault.getMarkdownFiles()
+            .filter((f: TFile) => f.parent.name === this.plugin.settings.ProjectsDir);
+
+        return projectFiles;
+    }
+
+    getAllProjects = () : Project[] => {
+        const projectFiles: TFile[] = this.getAllProjectFiles();
+        
+        const projects: Project[] = [];
+        for (const tf of projectFiles) {
+            const project = this.getProjectFromFile(tf);
+            projects.push(project);
+        }
+        return projects;
     }
 }

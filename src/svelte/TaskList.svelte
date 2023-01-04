@@ -38,6 +38,10 @@
             );
         }
 
+        if (filterParams.project) {
+            tasks = tasks.filter((task: Task) => task.project === filterParams.project)
+        }
+
         groupings = sortTasksByDate(tasks, reverse).reduce(
             (accum: any, task: Task) => {
                 const dt =
@@ -64,7 +68,7 @@
 <div style="display:flex;justify-content:center;">
     <div style="max-width:725px; margin:auto; flex-grow:1">
         <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll">
-            {#if !filterParams.id}
+            {#if !filterParams.id && !filterParams.project}
                 <WeeklyProgressRing plugin={plugin}></WeeklyProgressRing>
                 <ProgressOnSchedule plugin={plugin}></ProgressOnSchedule>
             {/if}
@@ -86,7 +90,12 @@
                         tasks={groupings[grouping]}
                     />
                 {/each}
+
+                {#if (Object.keys(groupings).length === 0)}
+                    <em style="font-size:12px;color:grey;text-align:center">No tasks to display</em>
+                {/if}
             {/if}
+
         </ul>
     </div>
 </div>

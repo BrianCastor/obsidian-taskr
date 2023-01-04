@@ -5,8 +5,9 @@
     import DateChip from "./DateChip.svelte";
     import LoeChip from "./LOE_Chip.svelte";
     import ProjectSelector from "./ProjectSelector.svelte";
-    import { allEfforts, allProjects } from "../utils";
-    import { parseDate } from "chrono-node/dist/locales/en";
+    import { allEfforts } from "../utils";
+    import { allProjectsCache } from "../cache";
+    import type { Project } from "../project";
 
     export let close: () => void;
     export let store: (task: Task) => void;
@@ -63,12 +64,12 @@
         })
 
         //Get projects
-        const projects = allProjects()
+        const projects = $allProjectsCache
         const tags = text.split(' ').filter((term: string) => term.startsWith('#'))
         tags.map((tag: string) => {
-            const matchingProject = projects.find((proj: Record<string,string>) => proj.label.toLowerCase().replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim() === tag.toLowerCase().replace('#', '').trim())
+            const matchingProject = projects.find((proj: Project) => proj.title.toLowerCase().replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim() === tag.toLowerCase().replace('#', '').trim())
             if (matchingProject) {
-                project = matchingProject.label
+                project = matchingProject.title
                 text = text.replace(tag, "")
             }
         })

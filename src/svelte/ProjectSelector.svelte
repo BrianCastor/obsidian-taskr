@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { showDropdownMenu } from "../components/DropdownMenu";
-    import { allProjects } from "../utils";
+    import type { Project } from "../project";
+    import { allProjectsCache } from "../cache";
+    import { showDropdownMenu, type DropdownMenuOption } from "../components/DropdownMenu";
 
     export let project: string | undefined;
     export let setProject: (project: string | undefined) => void;
@@ -8,14 +9,14 @@
     export let hideText: boolean | undefined = false;
 
     let container: HTMLDivElement;
-    let options = allProjects().map((opt: any) => {
+    let options : DropdownMenuOption[] = $allProjectsCache.map((opt: Project) => {
         return {
-            ...opt,
-            onClick: () => setProject(opt.label)
+            label: opt.title,
+            onClick: () => setProject(opt.title)
         }
     })
 
-    let selectedOption: Record<string, string> | undefined = undefined;
+    let selectedOption: DropdownMenuOption | undefined = undefined;
 
     $ : {
         selectedOption = project ? options.find((opt: any) => opt.label === project) : undefined;

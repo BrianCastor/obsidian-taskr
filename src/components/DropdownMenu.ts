@@ -1,6 +1,6 @@
 import { Menu } from "obsidian";
 
-interface DropdownMenuOption {
+export interface DropdownMenuOption {
     label: string;
     onClick: () => void;
 }
