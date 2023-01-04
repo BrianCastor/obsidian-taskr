@@ -110,6 +110,9 @@ export class Task {
             contents.push('');
         }
         contents.push(this.title);
+        contents.push("```taskr");
+        contents.push(`id: ${this.id}`)
+        contents.push('```')
         contents.push('---')
 
         return contents.join('\n');
