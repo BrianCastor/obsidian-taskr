@@ -36,7 +36,7 @@
     class={`chip-container ${size}`}
     style={`color:${getColor(effort)}`}
     bind:this={container}
-    on:click={() => showDropdownMenu(options, container)}
+    on:click|stopPropagation={() => showDropdownMenu(options, container)}
 >
     <div style="font-weight:bold;">
         {#if selectedOption}

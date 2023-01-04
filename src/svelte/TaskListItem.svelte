@@ -117,7 +117,7 @@
 </script>
 
 <li on:contextmenu={onClickTaskContainer} style="margin-bottom:5px">
-    <div class="containerDiv">
+    <div class="containerDiv" on:click={() => (expanded = !expanded)}>
         <div style="margin-right:12px;display:flex;align-items:center;">
             <Checkbox
                 checked={task.complete}
@@ -128,7 +128,7 @@
             <div style="display:flex; alignItems:center;flex-wrap:wrap;row-gap:10px;">
                 <div
                     bind:this={taskContentEl}
-                    on:click={() => navigateToTask()}
+                    on:click|stopPropagation={() => navigateToTask()}
                     class={task.complete
                         ? "containerLi completed"
                         : "containerLi"}
@@ -155,7 +155,6 @@
         </div>
         <div
             style="color:grey;padding-right:10px;cursor:pointer;"
-            on:click={() => (expanded = !expanded)}
         >
             {#if expanded}
                 <svg
@@ -219,7 +218,7 @@
                 />
             </div>
             <div style="height:38px; width:100%;"></div>
-            <button on:click={() => onDelete()} style="color:rgb(250,130,130); height:26px; font-size:14px; text-decoration:uppercase">
+            <button on:click={() => onDelete()} style="color:rgb(250,130,130); height:26px; font-size:14px; text-decoration:uppercase; width: auto !important;">
                 {#if !showDeleteConfirm}
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
                 {:else}
@@ -237,9 +236,15 @@
     flex-wrap: nowrap;
     align-items: center;
     row-gap: 10px;
+    cursor: pointer;
 }
+
+.containerDiv:hover svg {
+    color:white !important;
+}
+
 .containerLi:hover {
-    background-color: rgb(1, 1, 1, 0.2);
+    background-color: rgb(1, 1, 1);
     cursor: pointer;
 }
 .containerLi.completed {

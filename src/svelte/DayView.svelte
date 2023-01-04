@@ -161,5 +161,6 @@
     border: none;
     border-radius: 2px;
     color: rgb(26, 213, 213);
+    width: auto !important;
 }
 </style>

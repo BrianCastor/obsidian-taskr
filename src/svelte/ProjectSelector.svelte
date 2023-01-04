@@ -32,7 +32,7 @@
     class={`chip-container ${size}`}
     style={`color:${getColor(project)}`}
     bind:this={container}
-    on:click={() => showDropdownMenu(options, container)}
+    on:click|stopPropagation={() => showDropdownMenu(options, container)}
 >
     <div>
         {#if selectedOption}

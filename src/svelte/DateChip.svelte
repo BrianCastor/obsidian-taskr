@@ -77,7 +77,7 @@
 <div
     class={`chip-container ${size}`}
     bind:this={container}
-    on:click={() => showDropdownMenu(dateOptions, container)}
+    on:click|stopPropagation={() => showDropdownMenu(dateOptions, container)}
 >
     <div style="margin-right:8px; color:grey">
         {emoji}
