@@ -2,8 +2,8 @@ import { format, isBefore, isToday, isTomorrow, isYesterday, startOfYesterday, a
 import { enUS } from "date-fns/locale";
 
 export const formatDateRelativeToNow = (date: Date) => {
-    if (isBefore(date, addDays(startOfYesterday(), -7))) return formatDistanceToNow(date, {locale: enUS, addSuffix:true})
-    if (isWithinInterval(date, {start: addDays(startOfYesterday(), -7), end: startOfYesterday()})) return format(date, "'Last' eee")
+    if (isBefore(date, addDays(startOfYesterday(), -6))) return formatDistanceToNow(date, {locale: enUS, addSuffix:true})
+    if (isWithinInterval(date, {start: addDays(startOfYesterday(), -6), end: startOfYesterday()})) return format(date, "'Last' eee")
     if (isYesterday(date)) return 'Yesterday';
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
