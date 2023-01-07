@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Task } from "src/task";
+    import type { Task } from "../task";
     import { slide } from "svelte/transition";
     import type TaskrPlugin from "../main";
     import TaskListItem from "./TaskListItem.svelte";

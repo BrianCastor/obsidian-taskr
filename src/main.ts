@@ -1,12 +1,13 @@
 import { Plugin, TAbstractFile, TFile, type MarkdownPostProcessorContext } from 'obsidian';
 import { allProjectsCache, allTasksCache } from './cache';
-import { CompletedTaskListView, COMPLETED_TASK_LIST_VIEW_TYPE } from './components/completedTaskListView';
-import { TaskListView, TASK_LIST_VIEW_TYPE } from './components/taskListView';
+import { TaskListView, TASK_LIST_TYPES } from './components/taskListView';
 import { TaskModal } from './components/taskModal';
 import { FileInterface } from './fileInterface';
 import type { Project } from './project';
 import { SettingsTab, settingsWithDefaults, type ISettings } from './settings';
-import TaskList from './svelte/TaskList.svelte';
+import TasksToday from './svelte_pages/TasksToday.svelte';
+import SingleTask from './svelte_pages/SingleTask.svelte';
+import CompletedTasks from './svelte_pages/CompletedTasks.svelte';
 import type { Task } from './task';
 
 export default class TaskrPlugin extends Plugin {
@@ -33,41 +34,42 @@ export default class TaskrPlugin extends Plugin {
             },
         });
 
-        this.registerView(
-            TASK_LIST_VIEW_TYPE,
-            (leaf) => new TaskListView(leaf, this)
-        );
+        const typesToLabels = {
+            [TASK_LIST_TYPES.today]: {
+                icon: `calendar-check-2`,
+                label: 'Today (TASKR)'
+            },
+            [TASK_LIST_TYPES.completed]: {
+                icon: 'medal',
+                label: 'Completed (TASKR)'
+            },
+            [TASK_LIST_TYPES.thisWeek]: {
+                icon: 'calendar-clock',
+                label: 'This Week (TASKR)'
+            },
+            [TASK_LIST_TYPES.incomplete]: {
+                icon: 'list',
+                label: 'Upcoming (TASKR)'
+            },
+        }
 
-        this.addRibbonIcon("list-checks", "Today (TASKR)", async () => {
-            this.app.workspace.detachLeavesOfType(TASK_LIST_VIEW_TYPE);
-    
-            await this.app.workspace.getLeaf(false).setViewState({
-              type: TASK_LIST_VIEW_TYPE,
-              active: true,
-            });
-        
-            this.app.workspace.revealLeaf(
-              this.app.workspace.getLeavesOfType(TASK_LIST_VIEW_TYPE)[0]
+        Object.values(TASK_LIST_TYPES).map((type: TASK_LIST_TYPES) => {
+
+            this.registerView(
+                type,
+                (leaf) => new TaskListView(leaf, this, type)
             );
-        });
 
-        this.registerView(
-            COMPLETED_TASK_LIST_VIEW_TYPE,
-            (leaf) => new CompletedTaskListView(leaf, this)
-        );
-
-        this.addRibbonIcon("medal", "Completed (TASKR)", async () => {
-            this.app.workspace.detachLeavesOfType(COMPLETED_TASK_LIST_VIEW_TYPE);
-    
-            await this.app.workspace.getLeaf(false).setViewState({
-              type: COMPLETED_TASK_LIST_VIEW_TYPE,
-              active: true,
-            });
+            this.addRibbonIcon(typesToLabels[type].icon, typesToLabels[type].label, async () => {
+                this.app.workspace.detachLeavesOfType(type);
         
-            this.app.workspace.revealLeaf(
-              this.app.workspace.getLeavesOfType(COMPLETED_TASK_LIST_VIEW_TYPE)[0]
-            );
-        });
+                await this.app.workspace.getLeaf(false).setViewState({
+                  type: type,
+                  active: true,
+                });
+            });
+
+        })
 
         // This adds a settings tab so the user can configure various aspects of the plugin
         this.addSettingTab(new SettingsTab(this.app, this));
@@ -127,6 +129,7 @@ export default class TaskrPlugin extends Plugin {
         }));
 
         this.registerEvent(this.app.vault.on('rename', async (file: TAbstractFile, oldPath: string) => {
+            //TODO - rename all project assignments on Tasks to new project name
             if (file instanceof TFile && file.parent.name == this.settings.ProjectsDir) {
                 const projects: Project[] = this.fileInterface.getAllProjects();
                 allProjectsCache.set(projects);
@@ -141,8 +144,10 @@ export default class TaskrPlugin extends Plugin {
     }
 
     onunload() {
-        this.app.workspace.detachLeavesOfType(TASK_LIST_VIEW_TYPE);
-        this.app.workspace.detachLeavesOfType(COMPLETED_TASK_LIST_VIEW_TYPE);
+        this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.today);
+        this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.completed);
+        this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.thisWeek);
+        this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.incomplete);
     }
 
     async loadSettings() {
@@ -174,12 +179,31 @@ export default class TaskrPlugin extends Plugin {
             }
         })
 
-        new TaskList({
-          target: el,
-          props: {
-            plugin: this,
-            filterParams: params,
-          },
-        });
+        if (params.id) {
+            new SingleTask({
+                target: el,
+                props: {
+                    taskId: params.id,
+                    plugin: this
+                }
+            })
+        }
+        else if (params.today) {
+            new TasksToday({
+                target: el,
+                props:{
+                    plugin: this
+                }
+            })
+        }
+        else if (params.completed) {
+            new CompletedTasks({
+                target: el,
+                props:{
+                    plugin: this
+                }
+            })
+        }
+
     };
 }

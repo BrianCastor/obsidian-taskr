@@ -42,6 +42,9 @@ export class Task {
     }
 
     isOverdue() {
+        if (this.complete) {
+            return false;
+        }
         if (!this.scheduled_date) {
             return false;
         }
