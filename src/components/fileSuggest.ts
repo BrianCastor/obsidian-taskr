@@ -1,0 +1,84 @@
+import type TaskrPlugin from "main";
+import { App, PopoverSuggest, Scope, TFile, prepareFuzzySearch, type FuzzyMatch } from "obsidian";
+
+/**
+ * Might be building on a shaky foundation here. A lot of the base class is undocumented
+ */
+export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
+    app: App
+    inputEl: HTMLElement
+    plugin: TaskrPlugin
+    onSelect: (file: TFile) => void;
+
+    constructor(
+        app: App,
+        scope: Scope,
+        plugin: TaskrPlugin,
+        inputEl: HTMLElement,
+        onSelect: (file: TFile) => void
+    ) {
+        super(app, scope);
+        this.app = app;
+        this.inputEl = inputEl;
+        this.plugin = plugin;
+        this.onSelect = onSelect;
+    }
+
+    getSuggestions(text: string, type: string) {
+        let tfiles: TFile[] = []
+        if (type === 'people') {
+            const peopleDir = this.plugin.settings.PeopleDir;
+            tfiles = this.app.vault.getMarkdownFiles().filter((f: TFile) => f.parent.name === peopleDir); //TODO, do we need to cache this when creating class
+        }
+        else {
+            const projectsDir = this.plugin.settings.ProjectsDir;
+            tfiles = this.app.vault.getMarkdownFiles().filter((f: TFile) => f.parent.name === projectsDir);
+        }
+
+        const fuzzy = prepareFuzzySearch(text)
+        const result: FuzzyMatch<TFile>[] = []
+        for (const f of tfiles) {
+            const match = fuzzy(f.basename)
+            match && result.push({
+                item: f,
+                match,
+            })
+        }
+        //@ts-ignore
+        this.suggestions.setSuggestions(result);
+        return result;
+    }
+
+    renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
+        el.textContent = value.item.basename
+        el.setAttribute('title', value.item.basename)
+        return el
+    }
+
+    suggestBasedOnText(text: string, type: string) {
+        //@ts-ignore
+        const rect = this.inputEl.getBoundingClientRect()
+        //@ts-ignore
+        this.suggestEl.style.width = rect.width + 'px'
+        //@ts-ignore
+        this.reposition(rect)
+        const suggestions = this.getSuggestions(text, type)
+
+        if (suggestions.length > 0) {
+            this.open()
+        }
+        else {
+            this.close()
+        }
+    }
+
+    selectSuggestion(match: FuzzyMatch<TFile>, evt: MouseEvent | KeyboardEvent): void {
+        this.onSelect(match.item);
+        this.close();
+    }
+
+    destroy() {
+        //@ts-ignore
+        this.selectEl.remove()
+    }
+}

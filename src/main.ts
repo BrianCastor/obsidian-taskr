@@ -9,6 +9,7 @@ import TasksToday from './svelte_pages/TasksToday.svelte';
 import SingleTask from './svelte_pages/SingleTask.svelte';
 import CompletedTasks from './svelte_pages/CompletedTasks.svelte';
 import type { Task } from './task';
+import TasksReferencingThisPage from './svelte_pages/TasksReferencingThisPage.svelte';
 
 export default class TaskrPlugin extends Plugin {
     fileInterface: FileInterface;
@@ -201,6 +202,15 @@ export default class TaskrPlugin extends Plugin {
                 target: el,
                 props:{
                     plugin: this
+                }
+            })
+        }
+        else if (params.this) {
+            new TasksReferencingThisPage({
+                target: el,
+                props: {
+                    plugin: this,
+                    filePath: ctx.sourcePath,
                 }
             })
         }

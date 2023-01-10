@@ -21,6 +21,7 @@ export class TaskModal extends Modal {
           //@ts-ignore
           store: this.onSave,
           app: this.app,
+          plugin: this.plugin
         },
       });
     };

@@ -103,4 +103,27 @@ export class FileInterface {
         }
         return projects;
     }
+
+    getTaskIdsLinkingToFile = (path: string) => {
+        //TODO - may be able to optimize this better
+        const linkers = this.app.metadataCache.resolvedLinks;
+        const linkedPaths = new Set();
+        Object.keys(linkers).map((linker: string) => {
+            Object.keys(linkers[linker]).map((f: string) => {
+                if (f === path) {
+                    linkedPaths.add(linker)
+                }
+            })
+        })
+
+        //@ts-ignore
+        const taskIds: string[] = [...linkedPaths].map((filePath: string) => {
+            return this.app.vault.getAbstractFileByPath(filePath)
+        }).filter((file: TFile) => {
+            return file.parent.name === this.plugin.settings.TasksDir;
+        }).map((file: TFile) => file.basename) 
+
+        return taskIds
+
+    }
 }
