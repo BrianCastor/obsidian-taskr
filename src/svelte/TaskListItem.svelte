@@ -33,6 +33,10 @@
 
         // Remove the wrapping '<p>' tag to force it to inline.
         const markdownContent = taskContentEl.querySelector("p");
+        markdownContent?.querySelectorAll('a').forEach(el => {
+            el.style.textDecoration = "none";
+            el.style.color = "rgb(150,190,250)"
+        });
 
         if (markdownContent) {
             markdownContent.parentElement?.removeChild(markdownContent);
