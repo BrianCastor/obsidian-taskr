@@ -16,8 +16,10 @@
     let taskContentEl: HTMLDivElement;
     let showDeleteConfirm: boolean = false;
 
-    onMount(async () => {
-        await renderMarkdown(task.title);
+    let mounted = false;
+
+    onMount(() => {
+        mounted = true;
     });
 
     async function renderMarkdown(content: string): Promise<void> {
@@ -34,7 +36,7 @@
 
         if (markdownContent) {
             markdownContent.parentElement?.removeChild(markdownContent);
-            taskContentEl.innerHTML += markdownContent.innerHTML;
+            taskContentEl.innerHTML = markdownContent.innerHTML;
         }
     }
 
@@ -114,6 +116,12 @@
         evt.stopPropagation();
         evt.preventDefault();
     }
+
+    $ : {
+        if (mounted) {
+            renderMarkdown(task.title)
+        }
+    }
 </script>
 
 <li on:contextmenu={onClickTaskContainer} style="margin-bottom:5px">
@@ -132,7 +140,7 @@
                     class={task.complete
                         ? "containerLi completed"
                         : "containerLi"}
-                    style="margin-right:10px"
+                    style="margin-right:10px; text-decoration:none;"
                 />
                 {#if !expanded}
                     <div style="display: flex; align-items:center">
