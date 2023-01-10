@@ -134,17 +134,17 @@
     function handleKeyPress(e: any) {
         if (e.key === "Enter" && !suggest?.open()) {
             save();
-        } else {
-            //TODO - select first element in suggest
         }
     }
 
     function onSuggestSelect(tfile: TFile) {
         const backLink = ` [[${tfile.basename}]] `;
+
+        //TODO this could be less hacky
         if (inputText.contains('@')) {
-            inputText = inputText.split("@")[0] + backLink;
+            inputText = inputText.split("@")[0] + backLink + "&nbsp;"
         } else if (inputText.contains('#')) {
-            inputText = inputText.split("#")[0] + backLink;
+            inputText = inputText.split("#")[0] + backLink + "&nbsp;"
             onSetProject(tfile.basename)
         } else {
             return;
