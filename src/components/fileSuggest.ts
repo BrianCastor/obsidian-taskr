@@ -1,5 +1,5 @@
 import type TaskrPlugin from "main";
-import { App, PopoverSuggest, Scope, TFile, prepareFuzzySearch, type FuzzyMatch } from "obsidian";
+import { App, PopoverSuggest, Scope, TFile, prepareFuzzySearch, type FuzzyMatch, Platform } from "obsidian";
 
 /**
  * Might be building on a shaky foundation here. A lot of the base class is undocumented
@@ -22,6 +22,10 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
         this.inputEl = inputEl;
         this.plugin = plugin;
         this.onSelect = onSelect;
+
+        this.inputEl.addEventListener('blur', e => {
+            this.close()
+        })
     }
 
     getSuggestions(text: string, type: string) {
@@ -56,12 +60,16 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
     }
 
     suggestBasedOnText(text: string, type: string) {
-        //@ts-ignore
-        const rect = this.inputEl.getBoundingClientRect()
-        //@ts-ignore
-        this.suggestEl.style.width = rect.width + 'px'
-        //@ts-ignore
-        this.reposition(rect)
+        let rect;
+        if (!Platform.isMobileApp) {
+            //@ts-ignore
+            rect = this.inputEl.getBoundingClientRect()
+            //@ts-ignore
+            this.suggestEl.style.width = rect.width + 'px'
+            //@ts-ignore
+            this.reposition(rect)
+        }
+
         const suggestions = this.getSuggestions(text, type)
 
         if (suggestions.length > 0) {
@@ -78,6 +86,9 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
     }
 
     destroy() {
+        this.inputEl.removeEventListener('blur', e => {
+            this.close()
+        })
         //@ts-ignore
         this.selectEl.remove()
     }
