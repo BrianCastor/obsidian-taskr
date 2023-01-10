@@ -151,6 +151,8 @@
         }        
 
         inputEl.focus();
+
+        //TODO - make less hacky
         setTimeout(() => {
             if (
                 typeof window.getSelection != "undefined" &&
@@ -171,7 +173,6 @@
     });
 
     onDestroy(() => {
-        //TODO - destroy fully
         suggest?.close();
         suggest?.destroy();
     });
