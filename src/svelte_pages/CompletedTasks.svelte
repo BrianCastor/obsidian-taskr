@@ -4,6 +4,7 @@
     import type { Task } from "../task";
     import Container from "../svelte/Container.svelte";
     import TaskList from "../svelte/TaskList.svelte";
+    import CompletionChart from "../svelte/CompletionChart.svelte";
 
     export let plugin: TaskrPlugin;
 
@@ -17,6 +18,7 @@
 </script>
 
 <Container>
+    <CompletionChart plugin={plugin}/>
     <TaskList
         tasks={tasks}
         plugin={plugin}
