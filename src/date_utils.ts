@@ -1,9 +1,9 @@
-import { format, isBefore, isToday, isTomorrow, isYesterday, startOfYesterday, addDays, formatDistanceToNow, isWithinInterval, endOfTomorrow, addYears, endOfToday } from "date-fns";
+import { format, isBefore, isToday, isTomorrow, isYesterday, startOfYesterday, addDays, formatDistanceToNow, isWithinInterval, endOfTomorrow, addYears, endOfToday, endOfYesterday } from "date-fns";
 import { enUS } from "date-fns/locale";
 
 export const formatDateRelativeToNow = (date: Date) => {
     if (isBefore(date, addDays(startOfYesterday(), -6))) return formatDistanceToNow(date, {locale: enUS, addSuffix:true})
-    if (isWithinInterval(date, {start: addDays(startOfYesterday(), -6), end: startOfYesterday()})) return format(date, "'Last' eee")
+    if (isWithinInterval(date, {start: addDays(startOfYesterday(), -6), end: addDays(endOfYesterday(), -1)})) return format(date, "'Last' eee")
     if (isYesterday(date)) return 'Yesterday';
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
