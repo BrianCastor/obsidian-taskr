@@ -61,10 +61,16 @@ export default class TaskrPlugin extends Plugin {
                 (leaf) => new TaskListView(leaf, this, type)
             );
 
-            this.addRibbonIcon(typesToLabels[type].icon, typesToLabels[type].label, async () => {
-                this.app.workspace.detachLeavesOfType(type);
+            this.addRibbonIcon(typesToLabels[type].icon, typesToLabels[type].label, () => {
+                const leaf = this.app.workspace.getLeaf(false)
+
+                this.app.workspace.iterateAllLeaves((l) => {
+                    if (l !== leaf && Object.values(TASK_LIST_TYPES).map(val => val.toString()).includes(l.getViewState().type)) {
+                        l.detach()
+                    }
+                })
         
-                await this.app.workspace.getLeaf(false).setViewState({
+                leaf.setViewState({
                   type: type,
                   active: true,
                 });
