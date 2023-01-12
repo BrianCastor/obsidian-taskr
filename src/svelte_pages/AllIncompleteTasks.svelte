@@ -8,6 +8,7 @@
     import ProgressOnSchedule from "../svelte/ProgressOnSchedule.svelte";
 
     export let plugin: TaskrPlugin;
+    export let addBottomPadding: boolean = false;
 
     let tasks: Task[] = [];
 
@@ -18,7 +19,7 @@
     });
 </script>
 
-<Container>
+<Container addBottomPadding={addBottomPadding}>
     <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll">
         <WeeklyProgressRing {plugin} />
         <ProgressOnSchedule {plugin} />

@@ -50,7 +50,8 @@ export class TaskListView extends ItemView {
             new TasksToday({
                 target: (this as any).contentEl,
                 props:{
-                    plugin: this.plugin
+                    plugin: this.plugin,
+                    addBottomPadding: true
                 }
             })
         }
@@ -58,7 +59,8 @@ export class TaskListView extends ItemView {
             new CompletedTasks({
                 target: (this as any).contentEl,
                 props:{
-                    plugin: this.plugin
+                    plugin: this.plugin,
+                    addBottomPadding: true
                 }
             })
         }
@@ -66,7 +68,8 @@ export class TaskListView extends ItemView {
             new TasksThisWeek({
                 target: (this as any).contentEl,
                 props:{
-                    plugin: this.plugin
+                    plugin: this.plugin,
+                    addBottomPadding: true
                 }
             })
         }
@@ -74,7 +77,8 @@ export class TaskListView extends ItemView {
             new AllIncompleteTasks({
                 target: (this as any).contentEl,
                 props:{
-                    plugin: this.plugin
+                    plugin: this.plugin,
+                    addBottomPadding: true
                 }
             })
         }

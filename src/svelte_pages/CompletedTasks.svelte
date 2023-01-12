@@ -7,6 +7,7 @@
     import CompletionChart from "../svelte/CompletionChart.svelte";
 
     export let plugin: TaskrPlugin;
+    export let addBottomPadding: boolean = false;
 
     let tasks: Task[] = [];
 
@@ -17,7 +18,7 @@
     });
 </script>
 
-<Container>
+<Container addBottomPadding={addBottomPadding}>
     <CompletionChart plugin={plugin}/>
     <TaskList
         tasks={tasks}
