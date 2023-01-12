@@ -7,17 +7,12 @@
     } from "date-fns";
     import { allTasksCache } from "../cache";
     import type { Task } from "src/task";
-    import { onMount, onDestroy } from "svelte";
-    import ApexCharts from "apexcharts";
     import type TaskrPlugin from "main";
+    import ApexChart from "./ApexChart.svelte";
 
     export let plugin: TaskrPlugin;
 
-    let chartElem: HTMLElement;
-    let chart: any;
-
-    let series: any = [];
-    let series2: any = [];
+    let datasets: any[] = [];
 
     const FONT_COLOR = "rgba(140,150,150,.5)";
 
@@ -80,7 +75,7 @@
             curve: "stepline",
         },
         tooltip: {
-            theme: 'dark'
+            theme: "dark",
         },
 
         colors: ["#CC5500", "#00E396"],
@@ -102,8 +97,7 @@
         });
 
         if (tasks.length === 0) {
-            series = [];
-            series2 = [];
+            datasets = []
             return;
         }
 
@@ -139,7 +133,6 @@
                 y: runningTotal,
             };
         });
-        series = seriesTemp;
 
         let runningTotal2 = 0;
         const series2Temp = eachDayOfInterval({
@@ -153,35 +146,20 @@
             };
         });
 
-        series2 = series2Temp;
-    });
-
-    $: {
-        if (chart && series) {
-            chart.updateSeries([
-                {
-                    data: series2,
-                    name: "Goal",
-                },
-                {
-                    data: series,
-                    name: "Completed",
-                },
-            ]);
-        }
-    }
-
-    onMount(() => {
-        chart = new ApexCharts(chartElem, options);
-        chart.render();
-    });
-
-    onDestroy(() => {
-        chart.destroy();
+        datasets = [
+            {
+                data: series2Temp,
+                name: "Goal",
+            },
+            {
+                data: seriesTemp,
+                name: "Completed",
+            },
+        ];
     });
 </script>
 
-<div bind:this={chartElem} />
+<ApexChart datasets={datasets} chartOptions={options} />
 
 <style>
 </style>
