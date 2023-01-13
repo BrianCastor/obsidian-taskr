@@ -72,7 +72,7 @@
             borderColor: "rgba(150,150,150,.2)",
         },
         stroke: {
-            curve: "stepline",
+            curve: "straight",
         },
         tooltip: {
             theme: "dark",
