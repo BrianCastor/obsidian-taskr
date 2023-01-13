@@ -2,12 +2,13 @@
     import type { Task } from "../task";
     import type TaskrPlugin from "../main";
     import { onMount } from "svelte";
-    import { MarkdownRenderer, WorkspaceLeaf } from "obsidian";
+    import { MarkdownRenderer, MarkdownView, WorkspaceLeaf } from "obsidian";
     import DateChip from "./DateChip.svelte";
     import LoeChip from "./LOE_Chip.svelte";
     import Checkbox from "./Checkbox.svelte";
     import ProjectSelector from "./ProjectSelector.svelte";
     import { slide } from "svelte/transition";
+    import { TaskListView, TASK_LIST_TYPES } from "../components/taskListView";
 
     export let plugin: TaskrPlugin;
     export let task: Task;
@@ -82,23 +83,21 @@
 
     function navigateToTask() {
         const file = plugin.fileInterface.getTaskFileById(task.id);
-        let existingLeaf = undefined;
+        let existingLeaf: WorkspaceLeaf | undefined = undefined;
 
-        //Navigate to existing leaf instead of navigating current leaf
-        plugin.app.workspace.iterateAllLeaves((leaf: WorkspaceLeaf) => {
-            const vs = leaf.getViewState();
-            if (vs.type === "markdown") {
-                if (vs.state.file === task.filepath()) {
-                    existingLeaf = leaf;
-                    return;
-                }
-            }
-        });
-        if (existingLeaf) {
-            plugin.app.workspace.setActiveLeaf(existingLeaf);
-            return;
+        const lv = app.workspace.getActiveViewOfType(TaskListView)
+        if (lv) existingLeaf = lv?.leaf
+
+        if (!existingLeaf) {
+            const lv = app.workspace.getActiveViewOfType(MarkdownView)
+            if (lv) existingLeaf = lv?.leaf
         }
 
+        if (existingLeaf !== undefined) {
+            //@ts-ignore
+            existingLeaf.openFile(file)
+            return;
+        }
         let leaf = plugin.app.workspace.getLeaf(false);
         leaf.openFile(file);
     }

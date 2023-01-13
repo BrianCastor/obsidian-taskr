@@ -11,7 +11,6 @@
 
     $ : {
         if (datasets && rendered) {
-            console.log('n')
             chart?.updateSeries(datasets);
         }
     }

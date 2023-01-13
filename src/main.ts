@@ -1,4 +1,4 @@
-import { Plugin, TAbstractFile, TFile, type MarkdownPostProcessorContext } from 'obsidian';
+import { MarkdownView, Plugin, TAbstractFile, TFile, WorkspaceLeaf, type MarkdownPostProcessorContext } from 'obsidian';
 import { allProjectsCache, allTasksCache } from './cache';
 import { TaskListView, TASK_LIST_TYPES } from './components/taskListView';
 import { TaskModal } from './components/taskModal';
@@ -31,7 +31,7 @@ export default class TaskrPlugin extends Plugin {
             name: "Add Task (Taskr)",
             hotkeys: [{ modifiers: ["Mod"], key: "t" }],
             callback: () => {
-              new TaskModal(this.app, this).open();
+                new TaskModal(this.app, this).open();
             },
         });
 
@@ -62,18 +62,24 @@ export default class TaskrPlugin extends Plugin {
             );
 
             this.addRibbonIcon(typesToLabels[type].icon, typesToLabels[type].label, () => {
-                const leaf = this.app.workspace.getLeaf(false)
+                let existingLeaf: WorkspaceLeaf | undefined = undefined;
 
-                this.app.workspace.iterateAllLeaves((l) => {
-                    if (l !== leaf && Object.values(TASK_LIST_TYPES).map(val => val.toString()).includes(l.getViewState().type)) {
-                        l.detach()
-                    }
-                })
-        
-                leaf.setViewState({
-                  type: type,
-                  active: true,
+                const lv = app.workspace.getActiveViewOfType(TaskListView)
+                if (lv) existingLeaf = lv?.leaf
+
+                if (!existingLeaf) {
+                    const lv = app.workspace.getActiveViewOfType(MarkdownView)
+                    if (lv) existingLeaf = lv?.leaf
+                }
+
+                if (existingLeaf === undefined) {
+                    existingLeaf = app.workspace.getLeaf(false);
+                }
+                existingLeaf.setViewState({
+                    type: type,
+                    active: true,
                 });
+                app.workspace.revealLeaf(existingLeaf)
             });
 
         })
@@ -99,7 +105,7 @@ export default class TaskrPlugin extends Plugin {
                 allTasksCache.update(tasks => tasks.filter((t: Task) => t.id !== task.id));
             }
         }));
-        
+
         this.registerEvent(this.app.vault.on('create', async (file: TAbstractFile) => {
             if (file instanceof TFile && file.parent.name == this.settings.TasksDir) {
                 const task: Task = await this.fileInterface.getTaskFromFile(file);
@@ -127,7 +133,7 @@ export default class TaskrPlugin extends Plugin {
                 allProjectsCache.update(projects => projects.filter((p: Project) => p.title !== project.title));
             }
         }));
-        
+
         this.registerEvent(this.app.vault.on('create', async (file: TAbstractFile) => {
             if (file instanceof TFile && file.parent.name == this.settings.ProjectsDir) {
                 const project: Project = this.fileInterface.getProjectFromFile(file);
@@ -169,7 +175,7 @@ export default class TaskrPlugin extends Plugin {
         source: string,
         el: HTMLElement,
         ctx: MarkdownPostProcessorContext,
-      ): void => {
+    ): void => {
         const params: any = {};
         const lines = source.split('\n');
         const parseLine = (line: string) => {
@@ -198,7 +204,7 @@ export default class TaskrPlugin extends Plugin {
         else if (params.today) {
             new TasksToday({
                 target: el,
-                props:{
+                props: {
                     plugin: this
                 }
             })
@@ -206,7 +212,7 @@ export default class TaskrPlugin extends Plugin {
         else if (params.completed) {
             new CompletedTasks({
                 target: el,
-                props:{
+                props: {
                     plugin: this
                 }
             })
