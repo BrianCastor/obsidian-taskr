@@ -36,6 +36,7 @@
     <TaskList
         tasks={tasks}
         plugin={plugin}
+        groupBy="status"
     />
 </Container>
 

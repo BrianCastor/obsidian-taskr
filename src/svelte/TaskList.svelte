@@ -8,36 +8,58 @@
     export let plugin: TaskrPlugin;
     export let tasks: Task[];
     export let descending: boolean = false;
+    export let groupBy: "date" | "status" = "date";
 
     let groupings: any = {};
+    let sections: string[] = []
 
-    $ : {
-        groupings = sortTasksByDate(tasks.slice(), descending).reduce(
-            (accum: any, task: Task) => {
-                const dt =
-                    task.completed_date || task.scheduled_date || task.due_date;
+    $: {
+        if (groupBy === "status") {
+            groupings = sortTasksByDate(tasks.slice(), descending).reduce(
+                (accum: any, task: Task) => {
+                    let key;
+                    if (task.complete) key="Completed"
+                    else if (task.isOverdue()) key="Overdue"
+                    else if (task.scheduled_date) key="Scheduled"
+                    else if (task.due_date) key = "Due"
+                    else key = "Unscheduled"
 
-                let relativeDateStr = dt
-                    ? formatDateRelativeToNow(dt)
-                    : "Unscheduled";
+                    accum[key] = (accum[key] || []).concat(task)
+                    return accum
+                }, {}
+            )
+            sections = ["Overdue", "Scheduled", "Due", "Unscheduled", "Completed"].filter((s) => Object.keys(groupings).includes(s))
+        } else {
+            groupings = sortTasksByDate(tasks.slice(), descending).reduce(
+                (accum: any, task: Task) => {
+                    const dt =
+                        task.completed_date ||
+                        task.scheduled_date ||
+                        task.due_date;
 
-                if (!task.complete && task.isOverdue()) {
-                    relativeDateStr = "Overdue";
-                }
+                    let relativeDateStr = dt
+                        ? formatDateRelativeToNow(dt)
+                        : "Unscheduled";
 
-                accum[relativeDateStr] = (accum[relativeDateStr] || []).concat([
-                    task,
-                ]);
-                return accum;
-            },
-            {}
-        );
+                    if (!task.complete && task.isOverdue()) {
+                        relativeDateStr = "Overdue";
+                    }
+
+                    accum[relativeDateStr] = (
+                        accum[relativeDateStr] || []
+                    ).concat([task]);
+                    return accum;
+                },
+                {}
+            );
+            sections = Object.keys(groupings)
+        }
     }
 </script>
 
 <ul class="task-list-ul">
-    {#each Object.keys(groupings) as grouping, index}
-        <DayView {plugin} dayLabel={grouping} tasks={groupings[grouping]} />
+    {#each sections as section, index}
+        <DayView {plugin} dayLabel={section} tasks={groupings[section]} />
     {/each}
 
     {#if Object.keys(groupings).length === 0}
