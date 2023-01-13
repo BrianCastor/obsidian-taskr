@@ -18,7 +18,7 @@
     onMount( async () => {
         chart = new ApexCharts(chartElem, chartOptions);
         await chart.render()
-        setTimeout(() => rendered = true, 5)    //Hack to fix rendering issue
+        setTimeout(() => rendered = true, 15)    //Hack to fix rendering issue
     });
 
     onDestroy(() => {
