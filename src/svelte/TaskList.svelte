@@ -57,23 +57,17 @@
     }
 </script>
 
-<ul class="task-list-ul">
-    {#each sections as section, index}
-        <DayView {plugin} dayLabel={section} tasks={groupings[section]} />
-    {/each}
 
-    {#if Object.keys(groupings).length === 0}
-        <em style="font-size:12px;color:grey;text-align:center"
-            >No tasks to display</em
-        >
-    {/if}
-</ul>
+{#each sections as section, index}
+    <DayView {plugin} dayLabel={section} tasks={groupings[section]} />
+{/each}
+
+{#if Object.keys(groupings).length === 0}
+    <em style="font-size:12px;color:grey;text-align:center"
+        >No tasks to display</em
+    >
+{/if}
 
 <style>
-    .task-list-ul {
-        white-space: normal;
-        list-style: none;
-        padding-left: 0px;
-        margin: 10px 0px;
-    }
+
 </style>

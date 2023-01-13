@@ -20,7 +20,7 @@
 </script>
 
 <Container addBottomPadding={addBottomPadding}>
-    <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll">
+    <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll; margin-bottom: 10px;">
         <WeeklyProgressRing {plugin} />
         <ProgressOnSchedule {plugin} />
     </div>

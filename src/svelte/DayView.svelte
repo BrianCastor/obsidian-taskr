@@ -108,18 +108,23 @@
     </div>
     {#if showing}
         <div transition:slide="{{ duration: 300 }}" style="margin-left:10px;display:grid;grid-row-gap:12px;padding-bottom:8px;">
-            {#each tasks as task (task.id)}
-                <div
-                    style={!task.scheduled_date ? "color:grey !important" : ""}
-                >
-                    <TaskListItem {task} {plugin} />
-                </div>
-            {/each}
+                {#each tasks as task (task.id)}
+                    <div
+                        style={!task.scheduled_date ? "color:grey !important" : ""}
+                        class="task-container"
+                    >
+                        <TaskListItem {task} {plugin} />
+                    </div>
+                {/each}
         </div>
     {/if}
 </div>
 
 <style>
+.task-container {
+    white-space: normal;
+    list-style: none;
+}
 .headerUnscheduled {
     color: grey !important;
 }
