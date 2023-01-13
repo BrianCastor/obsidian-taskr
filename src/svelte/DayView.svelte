@@ -3,6 +3,7 @@
     import { slide } from "svelte/transition";
     import type TaskrPlugin from "../main";
     import TaskListItem from "./TaskListItem.svelte";
+    import { formatDuration } from "../date_utils";
 
     export let plugin: TaskrPlugin;
     export let dayLabel: string;
@@ -61,7 +62,7 @@
                 {dayLabel}
             </span>
             <span style={"font-size:13px;color:" + getColor(totalEffort)}
-                >&nbsp;{totalEffort.toString()}{#if hasUnknownEfforts}?{/if}m</span
+                >&nbsp;{formatDuration(totalEffort)}{#if hasUnknownEfforts}?{/if}</span
             >
         </div>
         {#if dayLabel === 'Overdue'}

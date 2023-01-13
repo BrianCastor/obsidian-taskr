@@ -1,4 +1,4 @@
-import { format, isBefore, isToday, isTomorrow, isYesterday, startOfYesterday, addDays, formatDistanceToNow, isWithinInterval, endOfTomorrow, addYears, endOfToday, endOfYesterday } from "date-fns";
+import { format, isBefore, isToday, isTomorrow, isYesterday, startOfYesterday, addDays, formatDistanceToNow, isWithinInterval, endOfTomorrow, addYears, endOfToday, endOfYesterday, intervalToDuration } from "date-fns";
 import { enUS } from "date-fns/locale";
 
 export const formatDateRelativeToNow = (date: Date) => {
@@ -11,4 +11,24 @@ export const formatDateRelativeToNow = (date: Date) => {
     if (isWithinInterval(date, {start: addDays(endOfToday(), 6), end: addDays(endOfToday(), 10)})) return format(date, "'Next' eeee")
     if (isWithinInterval(date, {start: addDays(endOfToday(), 10), end: addYears(endOfToday(), 1)})) return format(date, "MMM dd")
     return format(date, 'MM/dd/yy')
+}
+
+
+export const formatDuration = (minutesElapsed: number | undefined) => {
+    //Format days, hours, minutes
+    if (minutesElapsed === undefined) return '?';
+
+    const duration = intervalToDuration({ start: 0, end: minutesElapsed * 60 * 1000 })
+    if (duration.days) {
+        const daysDec = (minutesElapsed / 60 / 24).toLocaleString('us-EN', {maximumFractionDigits: 1,})
+        return `${daysDec}d`
+    }
+    else if (duration.hours) {
+        const hoursDec = (minutesElapsed / 60).toLocaleString('us-EN', {maximumFractionDigits: 1,})
+        return `${hoursDec}h`
+    }
+    else {
+        const minsDec = minutesElapsed.toLocaleString('us-EN', {maximumFractionDigits: 1,})
+        return `${minsDec}m`
+    }
 }
