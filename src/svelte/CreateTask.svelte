@@ -69,7 +69,7 @@
         });
 
         //Get projects
-        const projects = $allProjectsCache;
+        /*const projects = $allProjectsCache;
         const tags = text
             .split(" ")
             .filter((term: string) => term.startsWith("#"));
@@ -88,7 +88,7 @@
                 project = matchingProject.title;
                 text = text.replace(tag, "");
             }
-        });
+        });*/
 
         //Get Effort
         text.split(" ").map((term: string) => {
@@ -144,7 +144,7 @@
         if (inputText.contains('@')) {
             inputText = inputText.split("@")[0] + backLink + "&nbsp;"
         } else if (inputText.contains('#')) {
-            inputText = inputText.split("#")[0] + backLink + "&nbsp;"
+            inputText = inputText.split("#")[0]// + backLink + "&nbsp;"
             onSetProject(tfile.basename)
         } else {
             return;
