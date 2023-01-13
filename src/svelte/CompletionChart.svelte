@@ -106,12 +106,12 @@
             task
         ) {
             const dt_string = format(task.completed_date ?? 0, "yyyy-MM-dd");
-            rv[dt_string] = rv[dt_string]
-                ? (rv[dt_string] += task.effort ?? 0) / 60
-                : (task.effort ?? 0) / 60;
+            rv[dt_string] = (rv[dt_string] ?? 0) + (task.effort ?? 0) / 60
             return rv;
         },
         {});
+
+        console.log(groupedByDate)
 
         const todayStr = format(startOfToday(), "yyyy-MM-dd");
         if (!Object.keys(groupedByDate).includes(todayStr)) {
