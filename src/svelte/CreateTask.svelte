@@ -5,8 +5,6 @@
     import LoeChip from "./LOE_Chip.svelte";
     import ProjectSelector from "./ProjectSelector.svelte";
     import { allEfforts } from "../utils";
-    import { allProjectsCache } from "../cache";
-    import type { Project } from "../project";
     import { onDestroy, onMount } from "svelte";
     import { FileSuggest } from "../components/fileSuggest";
     import type { App, TFile } from "obsidian";
@@ -17,7 +15,7 @@
     export let app: App;
     export let plugin: TaskrPlugin;
 
-    let inputText = "";
+    let inputHTML = "";
     let title: string = "";
     let due: Date | undefined;
     let scheduled: Date | undefined;
@@ -43,52 +41,43 @@
         close();
     };
 
-    $: {
+    
+
+    $ : {
         // Unescape the div content
-        const doc = new DOMParser().parseFromString(inputText, "text/html");
-        let text = doc.documentElement.textContent ?? '';
+        const doc = new DOMParser().parseFromString(inputHTML, "text/html");
+        let textContent = doc.documentElement.textContent ?? '';
 
         //Remove extra spaces
-        text = text.replace(/\s+/g, " ");
+        let text = textContent.replace(/\s+/g, " ");
 
         //Get dates
         const parsedDates: any = NLPParse(text);
         parsedDates.forEach((pd: any) => {
             const parsedDate = pd.start.date();
-            const duePossibilities = [`Due ${pd.text}`, `due ${pd.text}`];
+            const duePossibilities = [`Due ${pd.text}`, `due ${pd.text}`, `by ${pd.text}`, `By ${pd.text}`];
+            const scheduledPossibilities = [`on ${pd.text}`, `On ${pd.text}`, pd.text]
             const foundDue = duePossibilities.find((poss: string) =>
+                text.includes(poss)
+            );
+            const foundScheduled = scheduledPossibilities.find((poss: string) =>
                 text.includes(poss)
             );
             if (foundDue) {
                 due = parsedDate;
                 text = text.replace(foundDue, "");
-            } else {
+            }
+            else if (foundScheduled) {
                 scheduled = parsedDate;
-                text = text.replace(pd.text, "");
+                text = text.replace(foundScheduled, "");
             }
+            else {
+                scheduled = pd.text;
+                text = text.replace(foundScheduled, pd.text);
+            }
+            let repl = foundDue || foundScheduled || pd.text;
+            //textContent = textContent.replace(repl, `<mark>${repl}</mark>`)
         });
-
-        //Get projects
-        /*const projects = $allProjectsCache;
-        const tags = text
-            .split(" ")
-            .filter((term: string) => term.startsWith("#"));
-        tags.map((tag: string) => {
-            const matchingProject = projects.find(
-                (proj: Project) =>
-                    proj.title
-                        .toLowerCase()
-                        .replace(
-                            /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-                            ""
-                        )
-                        .trim() === tag.toLowerCase().replace("#", "").trim()
-            );
-            if (matchingProject) {
-                project = matchingProject.title;
-                text = text.replace(tag, "");
-            }
-        });*/
 
         //Get Effort
         text.split(" ").map((term: string) => {
@@ -106,10 +95,10 @@
         title = text.trim();
 
         //TODO - split out text better
-        if (inputText.contains("@")) {
-            suggest?.suggestBasedOnText(inputText.split("@")[1], 'people');
-        } else if (inputText.contains('#')) {
-            suggest?.suggestBasedOnText(inputText.split("#")[1], 'projects');
+        if (inputHTML.contains("@")) {
+            suggest?.suggestBasedOnText(inputHTML.split("@")[1], 'people');
+        } else if (inputHTML.contains('#')) {
+            suggest?.suggestBasedOnText(inputHTML.split("#")[1], 'projects');
         } else {
             suggest?.close();
         }
@@ -141,10 +130,10 @@
         const backLink = ` [[${tfile.basename}]] `;
 
         //TODO this could be less hacky
-        if (inputText.contains('@')) {
-            inputText = inputText.split("@")[0] + backLink + "&nbsp;"
-        } else if (inputText.contains('#')) {
-            inputText = inputText.split("#")[0]// + backLink + "&nbsp;"
+        if (inputHTML.contains('@')) {
+            inputHTML = inputHTML.split("@")[0] + backLink + "&nbsp;"
+        } else if (inputHTML.contains('#')) {
+            inputHTML = inputHTML.split("#")[0]// + backLink + "&nbsp;"
             onSetProject(tfile.basename)
         } else {
             return;
@@ -181,7 +170,7 @@
 <div style="width:100%">
     <div
         contenteditable="true"
-        bind:innerHTML={inputText}
+        bind:innerHTML={inputHTML}
         class="task-input"
         bind:this={inputEl}
         on:keypress={handleKeyPress}
