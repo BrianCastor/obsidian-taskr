@@ -14,4 +14,7 @@
     }}
     min={addDays(new Date(), -30)}
     max={addDays(new Date(), 365)}
+    locale={{
+        weekStartsOn: 0
+    }}
 />
