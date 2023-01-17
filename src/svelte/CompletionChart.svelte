@@ -2,23 +2,34 @@
     import {
         eachDayOfInterval,
         format,
+        parse,
         startOfDay,
         startOfToday,
+        subDays,
     } from "date-fns";
     import { allTasksCache } from "../cache";
     import type { Task } from "src/task";
     import type TaskrPlugin from "main";
     import ApexChart from "./ApexChart.svelte";
+    import ButtonGroup from "./ButtonGroup.svelte";
 
     export let plugin: TaskrPlugin;
 
     let datasets: any[] = [];
+    let datePreset: string = "W";
+
+    const presetToDaysAgo: Record<string, number | undefined> = {
+        W: 7,
+        M: 31,
+        "6M": 182,
+        Y: 365,
+        All: undefined,
+    };
 
     const FONT_COLOR = "rgba(140,150,150,.5)";
 
     let options: any = {
         chart: {
-            type: "area",
             height: 220,
             toolbar: {
                 show: false,
@@ -36,7 +47,7 @@
                 colors: FONT_COLOR,
             },
         },
-        series: [],
+        series: datasets,
         yaxis: {
             title: { text: "Hours", style: { color: FONT_COLOR } },
             opposite: true,
@@ -53,7 +64,7 @@
         },
         xaxis: {
             type: "datetime",
-            max: new Date().getTime(),
+            max: startOfToday().getTime(),
             labels: {
                 style: {
                     colors: FONT_COLOR,
@@ -77,89 +88,110 @@
         tooltip: {
             theme: "dark",
         },
-
-        colors: ["#CC5500", "#00E396"],
+        fill: {
+            type: ["gradient", "solid"],
+            gradient: {
+                shade: 'dark',
+                opacityFrom: 0.8,
+                opacityTo: 0.1,
+                stops: [0, 100],
+                type: 'vertical',
+            },
+        },
+        colors: ["#00E396", "#CC5500"],
     };
 
-    allTasksCache.subscribe((ts: Task[]) => {
-        const temp = Math.min(
-            ...ts.map((t: Task) => {
-                return Math.min(
-                    (t.created_date || new Date()).getTime(),
-                    (t.completed_date || new Date()).getTime()
-                );
-            })
-        );
-        const startDate = startOfDay(new Date(temp));
+    $: {
+        if (datePreset) {
+            const daysAgo = presetToDaysAgo[datePreset];
+            options.xaxis.min = daysAgo
+                ? subDays(startOfToday(), daysAgo).getTime()
+                : null;
+        }
+    }
 
+    allTasksCache.subscribe((ts: Task[]) => {
         const tasks: Task[] = ts.filter((task: Task) => {
             return task.complete;
         });
 
         if (tasks.length === 0) {
-            datasets = []
+            datasets = [];
             return;
         }
+
+        const goalStartDate = parse(
+            plugin.settings.TaskCompletionStartDate,
+            "yyyy-MM-dd",
+            new Date()
+        );
+
+        const temp = Math.min(
+            ...ts.map((t: Task) => {
+                return t.completed_date?.getTime() || new Date().getTime();
+            }),
+            goalStartDate.getTime()
+        );
+        const startDate = startOfDay(new Date(temp));
 
         const groupedByDate = tasks.reduce(function (
             rv: Record<string, number>,
             task
         ) {
             const dt_string = format(task.completed_date ?? 0, "yyyy-MM-dd");
-            rv[dt_string] = (rv[dt_string] ?? 0) + (task.effort ?? 0) / 60
+            rv[dt_string] = (rv[dt_string] ?? 0) + (task.effort ?? 0) / 60;
             return rv;
         },
         {});
 
-        console.log(groupedByDate)
-
-        const todayStr = format(startOfToday(), "yyyy-MM-dd");
-        if (!Object.keys(groupedByDate).includes(todayStr)) {
-            groupedByDate[todayStr] = 0;
-        }
-
-        const firstDayStr = format(startDate, "yyyy-MM-dd");
-        if (!Object.keys(groupedByDate).includes(firstDayStr)) {
-            groupedByDate[firstDayStr] = 0;
-        }
-
-        const labels = Object.keys(groupedByDate).sort();
-
         let runningTotal = 0;
-        const seriesTemp = labels.map((label: string) => {
-            runningTotal += groupedByDate[label];
+        const seriesTemp = eachDayOfInterval({
+            start: startDate,
+            end: new Date(),
+        }).map((date: Date) => {
+            const dtStr = format(date, "yyyy-MM-dd");
+            if (groupedByDate[dtStr]) {
+                runningTotal += groupedByDate[dtStr];
+            }
             return {
-                x: label,
+                x: dtStr,
                 y: runningTotal,
             };
         });
 
         let runningTotal2 = 0;
         const series2Temp = eachDayOfInterval({
-            start: startDate,
+            start: goalStartDate,
             end: new Date(),
         }).map((date: Date) => {
             runningTotal2 += plugin.settings.DailyBandwidth;
             return {
                 x: format(date, "yyyy-MM-dd"),
-                y: runningTotal2,
+                y: runningTotal2 - plugin.settings.DailyBandwidth,
             };
         });
 
         datasets = [
             {
-                data: series2Temp,
-                name: "Goal",
-            },
-            {
                 data: seriesTemp,
                 name: "Completed",
+                type: "area",
+            },
+            {
+                data: series2Temp,
+                name: "Goal",
+                type: "line",
             },
         ];
     });
 </script>
 
-<ApexChart datasets={datasets} chartOptions={options} />
+<ButtonGroup
+    options={Object.keys(presetToDaysAgo)}
+    value={datePreset}
+    onChange={(value) => (datePreset = value)}
+/>
+<ApexChart {datasets} chartOptions={options} />
 
 <style>
 </style>

@@ -10,7 +10,8 @@
     let rendered = false;
 
     $ : {
-        if (datasets && rendered) {
+        if (datasets && chartOptions && rendered) {
+            chart?.updateOptions(chartOptions)
             chart?.updateSeries(datasets);
         }
     }
