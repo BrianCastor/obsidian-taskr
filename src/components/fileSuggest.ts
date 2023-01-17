@@ -54,7 +54,17 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
-        el.textContent = value.item.basename
+        let html = value.item.basename;
+        let extraChars = 0
+        value.match.matches.forEach((matchPos) => {
+            const start = extraChars + matchPos[0];
+            html = [html.slice(0, start), '<mark style="background:rgba(150,150,150,.4);color:white;font-weight:bold">', html.slice(start)].join('');
+            extraChars += 75
+            const end = extraChars + matchPos[1]
+            html = [html.slice(0, end), '</mark>', html.slice(end)].join('');
+            extraChars += 7
+        })
+        el.innerHTML = html
         el.setAttribute('title', value.item.basename)
         return el
     }
