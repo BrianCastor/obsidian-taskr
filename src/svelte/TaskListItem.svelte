@@ -262,4 +262,13 @@
     text-decoration: line-through;
     color: grey !important;
 }
+
+/*:global(span.cm-hmd-frontmatter) { 
+    display: none; 
+}
+
+:global(.cm-line:has(.cm-hmd-frontmatter)) { 
+    display: none !important; 
+    color:red;
+}*/
 </style>

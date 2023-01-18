@@ -2,6 +2,8 @@ import { parse, startOfDay } from "date-fns";
 import format from "date-fns/format";
 import { parseYaml } from "obsidian";
 
+//const backlinks_re = /\[\[.*?\]\]/g;
+
 export class Task {
     id: string;
     title: string;
@@ -12,6 +14,7 @@ export class Task {
     complete: boolean;
     project?: string | undefined;
     effort?: number | undefined;
+    //backlinks: string[];
 
     constructor(
         id: string | undefined,
@@ -23,6 +26,7 @@ export class Task {
         completed_date?: Date,
         created_date?: Date,
         effort?: number,
+        //backlinks: string[] = []
     ) {
         this.title = title;
         this.due_date = due_date;
@@ -32,6 +36,7 @@ export class Task {
         this.completed_date = completed_date;
         this.created_date = created_date;
         this.effort = effort;
+        //this.backlinks = backlinks;
 
         if (id) {
             this.id = id;
@@ -69,6 +74,10 @@ export class Task {
 
         const title: string = restOfFile.split('\n').find((row: string) => row.trim() !== '', 'Untitled Task') || 'Untitled Task';
 
+        //const backlinksLine = restOfFile.split('\n').find((row: string) => row.trim().startsWith('::links')) || '';
+        //const backlinks = [...backlinksLine.matchAll(backlinks_re)].map((val) => val[0])
+
+
         return new Task(
             params.id,
             title,
@@ -79,6 +88,7 @@ export class Task {
             params.completed_date && parse(params.completed_date, 'yyyy-MM-dd', new Date()),
             params.created_date && parse(params.created_date, 'yyyy-MM-dd', new Date()),
             params.effort,
+            //backlinks
         );
     }
 
@@ -113,6 +123,9 @@ export class Task {
             contents.push('');
         }
         contents.push(this.title);
+        //if (this.backlinks.length > 0) {
+        //    contents.push(`::links ${this.backlinks.join(' ')}`)
+        //}
         contents.push("```taskr");
         contents.push(`id: ${this.id}`)
         contents.push('```')

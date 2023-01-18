@@ -16,7 +16,7 @@
         justify-content:center;
     }
 
-    .c,.padded {
+    .c.padded {
         padding-bottom: 65px;
     }
 </style>
