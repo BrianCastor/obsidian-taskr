@@ -23,9 +23,10 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
         this.plugin = plugin;
         this.onSelect = onSelect;
 
-        this.inputEl.addEventListener('blur', e => {
+        /*this.inputEl.addEventListener('blur', e => {
+            //BLur was getting triggered before click
             this.close()
-        })
+        })*/
     }
 
     getSuggestions(text: string, type: string) {

@@ -52,7 +52,9 @@
 
     const getCursorPosition = () : number | undefined => {
         const selection = document.getSelection()
-        if (!selection) return undefined;
+        if (!selection) {
+            return undefined;
+        }
         //@ts-ignore
         return selection.baseOffset
     }
@@ -269,7 +271,7 @@
         background-color: rgba(1,1,1,.2);
         border-radius: 4px;
         padding: 10px;
-        z-index:999999 !important;
+        z-index:1 !important;
         position:relative;
     }
 
