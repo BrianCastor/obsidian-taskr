@@ -14,6 +14,7 @@ export class Task {
     complete: boolean;
     project?: string | undefined;
     effort?: number | undefined;
+    contentLength?: number | undefined;
     //backlinks: string[];
 
     constructor(
@@ -26,6 +27,7 @@ export class Task {
         completed_date?: Date,
         created_date?: Date,
         effort?: number,
+        contentLength?: number
         //backlinks: string[] = []
     ) {
         this.title = title;
@@ -36,6 +38,7 @@ export class Task {
         this.completed_date = completed_date;
         this.created_date = created_date;
         this.effort = effort;
+        this.contentLength = contentLength
         //this.backlinks = backlinks;
 
         if (id) {
@@ -74,6 +77,8 @@ export class Task {
 
         const title: string = restOfFile.split('\n').find((row: string) => row.trim() !== '', 'Untitled Task') || 'Untitled Task';
 
+        const existingContentLength = fileContent.slice(fileContent.split('---', 3).join('---').length + 3).trim().length
+
         //const backlinksLine = restOfFile.split('\n').find((row: string) => row.trim().startsWith('::links')) || '';
         //const backlinks = [...backlinksLine.matchAll(backlinks_re)].map((val) => val[0])
 
@@ -88,6 +93,7 @@ export class Task {
             params.completed_date && parse(params.completed_date, 'yyyy-MM-dd', new Date()),
             params.created_date && parse(params.created_date, 'yyyy-MM-dd', new Date()),
             params.effort,
+            existingContentLength
             //backlinks
         );
     }

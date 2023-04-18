@@ -143,10 +143,13 @@
                     class={task.complete
                         ? "containerLi completed"
                         : "containerLi"}
-                    style="margin-right:10px; text-decoration:none;"
+                    style="text-decoration:none;"
                 />
+                {#if task.contentLength && task.contentLength > 0}
+                <span style="margin-left:4px;">📄</span>
+                {/if}
                 {#if !expanded}
-                    <div style="display: flex; align-items:center">
+                    <div style="display: flex; align-items:center; margin-left: 10px">
                         {#if task.effort}
                             <LoeChip
                                 effort={task.effort}
