@@ -9,6 +9,8 @@
     import { FileSuggest } from "../components/fileSuggest";
     import type { App, TFile } from "obsidian";
     import type TaskrPlugin from "main";
+    import { allTasksCache } from "../cache";
+    import { ENGLISH_STOPWORDS } from "../stopwords";
 
     export let close: () => void;
     export let store: (task: Task) => void;
@@ -109,6 +111,45 @@
                 textContent = textContent.replace(term, `<mark class="green">${term}</mark>`)
             }
         });
+
+        //Try to pick up attributes from old tasks
+        const tokenize = (str: string) => {
+            return (str ?? "").toLowerCase().split(" ").map(term => term.trim()).filter((term) => !!term).filter((term: string) => !ENGLISH_STOPWORDS.includes(term))
+        }
+        
+        // Not my best work from an optimization perspective...
+        let taskMatch: Task | undefined = undefined
+        const compareTerms1 = tokenize(text)
+        if (compareTerms1.length >= 2) {
+            $allTasksCache.every((t: Task) => {
+                if (!t.effort && !t.project) {
+                    return true
+                }
+                const compareTerms2 = tokenize(t.title)
+                let count = 0
+                compareTerms1.forEach((term) => {
+                    if (compareTerms2.includes(term)) count += 1
+                    if (count > 1) {
+                        taskMatch = t
+                    }
+                })
+                if (taskMatch) {
+                    return false
+                }
+                return true
+            })
+        }
+
+        if (taskMatch) {
+            if (!effort) {
+                //@ts-ignore
+                effort = taskMatch.effort
+            }
+            if (!project) {
+                //@ts-ignore
+                project = taskMatch.project
+            }
+        }
 
         const mentions = [...(doc.documentElement.textContent ?? '').matchAll(mentions_re)];
         const hashtags = [...(doc.documentElement.textContent ?? '').matchAll(hashtags_re)];
