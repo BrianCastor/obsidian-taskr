@@ -2,32 +2,37 @@ import type TaskrPlugin from "main";
 import { App, MarkdownView, Modal } from "obsidian";
 import type { Task } from "../task";
 import CreateTask from '../svelte/CreateTask.svelte';
+import type { SvelteComponent } from "svelte";
 
 export class TaskModal extends Modal {
     plugin: TaskrPlugin;
+    svelteComponent?: SvelteComponent;
   
     constructor(app: App, plugin: TaskrPlugin) {
       super(app);
       this.plugin = plugin;
+      this.svelteComponent = undefined
     }
   
     onOpen = (): void => {
-      const { titleEl, contentEl } = this;
+      const { titleEl, contentEl, modalEl } = this;
       titleEl.setText('Create New Task');
-      new CreateTask({
+      this.svelteComponent = new CreateTask({
         target: contentEl,
         props: {
           close: () => this.close(),
           //@ts-ignore
           store: this.onSave,
           app: this.app,
-          plugin: this.plugin
+          plugin: this.plugin,
+          modalEl
         },
       });
     };
   
     onClose = (): void => {
       const { contentEl } = this;
+      this.svelteComponent?.$destroy()
       contentEl.empty();
     };
 

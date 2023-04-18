@@ -20,7 +20,7 @@
         "builtin-modules": "3.3.0",
         "eslint": "^8.21.0",
         "eslint-plugin-svelte3": "^4.0.0",
-        "obsidian": "latest",
+        "obsidian": "^1.2.3",
         "svelte": "^3.49.0",
         "svelte-check": "^2.8.0",
         "svelte-preprocess": "^4.10.7",

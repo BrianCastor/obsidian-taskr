@@ -22,11 +22,6 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
         this.inputEl = inputEl;
         this.plugin = plugin;
         this.onSelect = onSelect;
-
-        this.inputEl.addEventListener('blur', e => {
-            //BLur was getting triggered before click
-            this.close()
-        })
     }
 
     getSuggestions(text: string, type: string) {
@@ -93,14 +88,7 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
 
     selectSuggestion(match: FuzzyMatch<TFile>, evt: MouseEvent | KeyboardEvent): void {
         this.onSelect(match.item);
+        evt.preventDefault();
         this.close();
-    }
-
-    destroy() {
-        this.inputEl.removeEventListener('blur', e => {
-            this.close()
-        })
-        //@ts-ignore
-        this.selectEl.remove()
     }
 }

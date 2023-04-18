@@ -14,6 +14,7 @@
     export let store: (task: Task) => void;
     export let app: App;
     export let plugin: TaskrPlugin;
+    export let modalEl: any;
 
     //TODO - this all could use a refactor
 
@@ -217,12 +218,12 @@
 
     onMount(() => {
         suggest = new FileSuggest(app, app.scope, plugin, inputEl, onSuggestSelect);
+        modalEl.addEventListener('click', () => suggest?.close())
         inputEl.focus()
     });
 
     onDestroy(() => {
         suggest?.close();
-        suggest?.destroy();
     });
 </script>
 
