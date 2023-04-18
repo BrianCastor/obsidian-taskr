@@ -9,12 +9,15 @@
     export let hideText: boolean | undefined = false;
 
     let container: HTMLDivElement;
-    let options : DropdownMenuOption[] = $allProjectsCache.map((opt: Project) => {
+    let options : DropdownMenuOption[] = [...$allProjectsCache.map((opt: Project) => {
         return {
             label: opt.title,
             onClick: () => setProject(opt.title)
         }
-    })
+    }), {
+        label: 'Remove',
+        onClick: () => setProject(undefined)
+    }]
 
     let selectedOption: DropdownMenuOption | undefined = undefined;
 
