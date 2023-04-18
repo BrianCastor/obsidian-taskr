@@ -114,7 +114,7 @@
 
         //Try to pick up attributes from old tasks
         const tokenize = (str: string) => {
-            return (str ?? "").toLowerCase().split(" ").map(term => term.trim()).filter((term) => !!term).filter((term: string) => !ENGLISH_STOPWORDS.includes(term))
+            return (str ?? "").toLowerCase().split(" ").map(term => term.trim()).filter((term) => !!term)
         }
         
         // Not my best work from an optimization perspective...
@@ -127,9 +127,10 @@
                 }
                 const compareTerms2 = tokenize(t.title)
                 let count = 0
+                const matchTerms: string[] = []
                 compareTerms1.forEach((term) => {
-                    if (compareTerms2.includes(term)) count += 1
-                    if (count > 1) {
+                    if (compareTerms2.includes(term)) matchTerms.push(term)
+                    if (matchTerms.length >= 2 && !matchTerms.every((term) => ENGLISH_STOPWORDS.includes(term))) {
                         taskMatch = t
                     }
                 })
@@ -179,18 +180,22 @@
 
     function onSetDueDate(dt: Date | undefined) {
         due = dt;
+        inputEl.focus();
     }
 
     function onSetScheduledDate(dt: Date | undefined) {
         scheduled = dt;
+        inputEl.focus();
     }
 
     function onSetEffort(eff: number | undefined) {
         effort = eff;
+        inputEl.focus();
     }
 
     function onSetProject(pj: string | undefined) {
         project = pj;
+        inputEl.focus();
     }
 
     function handleKeyPress(e: any) {
