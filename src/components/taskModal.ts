@@ -17,6 +17,8 @@ export class TaskModal extends Modal {
     onOpen = (): void => {
       const { titleEl, contentEl, modalEl } = this;
       titleEl.setText('Create New Task');
+      modalEl.style.height = "auto"
+      modalEl.style.transition = "none !important"
       this.svelteComponent = new CreateTask({
         target: contentEl,
         props: {
