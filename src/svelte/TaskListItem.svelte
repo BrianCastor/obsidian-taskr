@@ -12,6 +12,7 @@
 
     export let plugin: TaskrPlugin;
     export let task: Task;
+    export let onNavigateAway: (() => void) | undefined = undefined;
 
     let expanded: boolean = false;
     let taskContentEl: HTMLDivElement;
@@ -82,6 +83,7 @@
     }
 
     function navigateToTask() {
+        if (onNavigateAway) onNavigateAway()
         const file = plugin.fileInterface.getTaskFileById(task.id);
         let existingLeaf: WorkspaceLeaf | undefined = undefined;
 

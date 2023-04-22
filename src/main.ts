@@ -2,6 +2,7 @@ import { Plugin, TAbstractFile, TFile, type MarkdownPostProcessorContext, Button
 import { allProjectsCache, allTasksCache } from './cache';
 import { TaskListView, TASK_LIST_TYPES } from './components/taskListView';
 import { TaskModal } from './components/taskModal';
+import { SearchModal } from './components/searchModal';
 import { FileInterface } from './fileInterface';
 import type { Project } from './project';
 import { SettingsTab, settingsWithDefaults, type ISettings } from './settings';
@@ -27,6 +28,10 @@ export default class TaskrPlugin extends Plugin {
             new TaskModal(this.app, this).open();
         });
 
+        this.addRibbonIcon('search', 'Search Tasks (TASKR)', () => {
+            new SearchModal(this.app, this).open();
+        });
+
         this.addCommand({
             id: "taskr-add-task",
             name: "Add Task (Taskr)",
@@ -36,20 +41,17 @@ export default class TaskrPlugin extends Plugin {
             },
         });
 
-        // Modify Mobile Buttons
-        const b1 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
-        if (b1) {
-            b1.innerHTML = ''
-            const b = new ButtonComponent(b1)
-            b.setIcon('list')
-            b.setClass('clickable-icon')
-            b.setClass('mod-tappable')
-            b.onClick((e: MouseEvent) => {
-                navigateToTaskPage(TASK_LIST_TYPES.incomplete)
-            })
-        }
+        this.addCommand({
+            id: "taskr-search-tasks",
+            name: "Search Tasks (Taskr)",
+            hotkeys: [{ modifiers: ["Mod"], key: "f" }],
+            callback: () => {
+                new SearchModal(this.app, this).open();
+            },
+        });
 
-        const b2 = document.getElementsByClassName('mobile-navbar-action')[1] as HTMLElement
+
+        const b2 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
         if (b2) {
             b2.innerHTML = ''
             const bn = new ButtonComponent(b2)
@@ -58,6 +60,31 @@ export default class TaskrPlugin extends Plugin {
             bn.setClass('mod-tappable')
             bn.onClick((e: MouseEvent) => {
                 navigateToTaskPage(TASK_LIST_TYPES.completed)
+            })
+        }
+
+        const b4 = document.getElementsByClassName('mobile-navbar-action')[1] as HTMLElement
+        if (b4) {
+            b4.innerHTML = ''
+            const bz = new ButtonComponent(b4)
+            bz.setIcon('search')
+            bz.setClass('clickable-icon')
+            bz.setClass('mod-tappable')
+            bz.onClick((e: MouseEvent) => {
+                new SearchModal(this.app, this).open()
+            })
+        }
+
+        // Modify Mobile Buttons
+        const b1 = document.getElementsByClassName('mobile-navbar-action')[3] as HTMLElement
+        if (b1) {
+            b1.innerHTML = ''
+            const b = new ButtonComponent(b1)
+            b.setIcon('list')
+            b.setClass('clickable-icon')
+            b.setClass('mod-tappable')
+            b.onClick((e: MouseEvent) => {
+                navigateToTaskPage(TASK_LIST_TYPES.incomplete)
             })
         }
 
