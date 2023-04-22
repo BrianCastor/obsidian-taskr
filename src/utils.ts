@@ -1,4 +1,6 @@
+import { MarkdownView, type WorkspaceLeaf } from "obsidian";
 import type { Task } from "./task";
+import { TaskListView } from "./components/taskListView";
 
 export const sortTasksByDate = (tasks: Task[], reverse = false) => {
     const ts: Task[] = tasks.sort((a: Task, b: Task) => {
@@ -24,4 +26,25 @@ export const allEfforts = (): any => {
         { icon: "4h", value: 240, label: "Up to 4 hours", autoSuggestTerm: 'vhard' },
         { icon: "?", value: undefined, label: "Remove", autoSuggestTerm: undefined }
     ]
+}
+
+export const navigateToTaskPage = (pageType: string) => {
+    let existingLeaf: WorkspaceLeaf | undefined = undefined;
+
+    const lv = app.workspace.getActiveViewOfType(TaskListView)
+    if (lv) existingLeaf = lv?.leaf
+
+    if (!existingLeaf) {
+        const lv = app.workspace.getActiveViewOfType(MarkdownView)
+        if (lv) existingLeaf = lv?.leaf
+    }
+
+    if (existingLeaf === undefined) {
+        existingLeaf = app.workspace.getLeaf(false);
+    }
+    existingLeaf.setViewState({
+        type: pageType,
+        active: true,
+    });
+    app.workspace.revealLeaf(existingLeaf)
 }

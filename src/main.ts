@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, TAbstractFile, TFile, WorkspaceLeaf, type MarkdownPostProcessorContext } from 'obsidian';
+import { Plugin, TAbstractFile, TFile, type MarkdownPostProcessorContext, ButtonComponent } from 'obsidian';
 import { allProjectsCache, allTasksCache } from './cache';
 import { TaskListView, TASK_LIST_TYPES } from './components/taskListView';
 import { TaskModal } from './components/taskModal';
@@ -10,6 +10,7 @@ import SingleTask from './svelte_pages/SingleTask.svelte';
 import CompletedTasks from './svelte_pages/CompletedTasks.svelte';
 import type { Task } from './task';
 import TasksReferencingThisPage from './svelte_pages/TasksReferencingThisPage.svelte';
+import { navigateToTaskPage } from './utils';
 
 export default class TaskrPlugin extends Plugin {
     fileInterface: FileInterface;
@@ -34,6 +35,31 @@ export default class TaskrPlugin extends Plugin {
                 new TaskModal(this.app, this).open();
             },
         });
+
+        // Modify Mobile Buttons
+        const b1 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
+        if (b1) {
+            b1.innerHTML = ''
+            const b = new ButtonComponent(b1)
+            b.setIcon('list')
+            b.setClass('clickable-icon')
+            b.setClass('mod-tappable')
+            b.onClick((e: MouseEvent) => {
+                navigateToTaskPage(TASK_LIST_TYPES.incomplete)
+            })
+        }
+
+        const b2 = document.getElementsByClassName('mobile-navbar-action')[1] as HTMLElement
+        if (b2) {
+            b2.innerHTML = ''
+            const bn = new ButtonComponent(b2)
+            bn.setIcon('medal')
+            bn.setClass('clickable-icon')
+            bn.setClass('mod-tappable')
+            bn.onClick((e: MouseEvent) => {
+                navigateToTaskPage(TASK_LIST_TYPES.completed)
+            })
+        }
 
         const typesToLabels = {
             [TASK_LIST_TYPES.today]: {
@@ -62,24 +88,7 @@ export default class TaskrPlugin extends Plugin {
             );
 
             this.addRibbonIcon(typesToLabels[type].icon, typesToLabels[type].label, () => {
-                let existingLeaf: WorkspaceLeaf | undefined = undefined;
-
-                const lv = app.workspace.getActiveViewOfType(TaskListView)
-                if (lv) existingLeaf = lv?.leaf
-
-                if (!existingLeaf) {
-                    const lv = app.workspace.getActiveViewOfType(MarkdownView)
-                    if (lv) existingLeaf = lv?.leaf
-                }
-
-                if (existingLeaf === undefined) {
-                    existingLeaf = app.workspace.getLeaf(false);
-                }
-                existingLeaf.setViewState({
-                    type: type,
-                    active: true,
-                });
-                app.workspace.revealLeaf(existingLeaf)
+                navigateToTaskPage(type)
             });
 
         })
