@@ -398,10 +398,10 @@
   "resolved" "https://registry.npmjs.org/date-fns/-/date-fns-2.29.3.tgz"
   "version" "2.29.3"
 
-"date-picker-svelte@^2.2.5":
-  "integrity" "sha512-cexGp5ugTLQqxpjoBsn3JQOGVsBwRpeHj76dwtEPCIyc4w0m5H/Zv6GkqRJd8aJSlo2uK21Dx4QnnCh7rLVh4g=="
-  "resolved" "https://registry.npmjs.org/date-picker-svelte/-/date-picker-svelte-2.2.5.tgz"
-  "version" "2.2.5"
+"date-picker-svelte@^2.3.0":
+  "integrity" "sha512-DgXlI+FHClWXxjt+EP2Tk37lu9nkxj3zYkNPLjcjiIq/SJhD0CIMmJa75wlXjuvDlpiQt75dMDvCIISTrMzcEQ=="
+  "resolved" "https://registry.npmjs.org/date-picker-svelte/-/date-picker-svelte-2.3.0.tgz"
+  "version" "2.3.0"
 
 "dayjs@^1.10.0":
   "integrity" "sha512-zZbY5giJAinCG+7AGaw0wIhNZ6J8AhWuSXKvuc1KAyMiRsvGQWqh4L+MomvhdAYjN+lqvVCMq1I41e3YHvXkyQ=="

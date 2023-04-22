@@ -32,6 +32,6 @@
         "apexcharts": "^3.36.3",
         "chrono-node": "^2.4.2",
         "date-fns": "^2.29.3",
-        "date-picker-svelte": "^2.2.5"
+        "date-picker-svelte": "^2.3.0"
     }
 }
