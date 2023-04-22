@@ -51,6 +51,7 @@ export default class TaskrPlugin extends Plugin {
         });
 
 
+        // Modify Mobile Buttons
         const b2 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
         if (b2) {
             b2.innerHTML = ''
@@ -75,11 +76,11 @@ export default class TaskrPlugin extends Plugin {
             })
         }
 
-        // Modify Mobile Buttons
         const b1 = document.getElementsByClassName('mobile-navbar-action')[3] as HTMLElement
         if (b1) {
-            b1.innerHTML = ''
-            const b = new ButtonComponent(b1)
+            const newElem = document.createElement('div')
+            b1.replaceWith(newElem)
+            const b = new ButtonComponent(newElem)
             b.setIcon('list')
             b.setClass('clickable-icon')
             b.setClass('mod-tappable')
