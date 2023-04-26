@@ -28,7 +28,7 @@
     <div style="flex-grow:1; padding-left:10px;">
         <span style="font-size:14px;white-space:nowrap">Weekly Progress</span>
         <br/>
-        <span style="color:cyan;font-weight:bold;">{Math.round(hoursCompletedThisWeek * 10) / 10}/{hoursToCompleteThisWeek} HR</span>
+        <span style="color:cyan;font-weight:bold;white-space:nowrap">{Math.round(hoursCompletedThisWeek * 10) / 10}/{hoursToCompleteThisWeek} HR</span>
     </div>
 </div>
 

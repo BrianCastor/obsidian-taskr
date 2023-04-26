@@ -23,7 +23,7 @@
 
 <Container addBottomPadding={addBottomPadding}>
     <CompletionChart plugin={plugin}/>
-    <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll; margin-bottom: 10px;">
+    <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll; margin-bottom: 10px;max-width:100vw">
         <ProgressOnSchedule {plugin} timePeriod="all-time" />
         <CompletionRate {plugin} />
         <BreakEven {plugin} />

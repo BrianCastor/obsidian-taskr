@@ -37,9 +37,9 @@
 <div class="statistic-container">
         <span style={`font-weight:bold; font-size:36px; color:${color}`}>{daysUntilComplete}</span>
         <div style="flex-grow:1; padding-left:10px;">
-            <span style="font-size:14px">Days Until</span>
+            <span style="font-size:14px;white-space:nowrap">Days Until</span>
             <br />
-            <span style={`color:${color}`}>
+            <span style={`color:${color};white-space:nowrap`}>
                 Break-Even
             </span>
         </div>
