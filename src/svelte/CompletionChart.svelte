@@ -16,7 +16,7 @@
     export let plugin: TaskrPlugin;
 
     let datasets: any[] = [];
-    let datePreset: string = "W";
+    let datePreset: string = "All";
 
     const presetToDaysAgo: Record<string, number | undefined> = {
         W: 7,
