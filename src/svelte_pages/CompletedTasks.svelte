@@ -5,6 +5,9 @@
     import Container from "../svelte/Container.svelte";
     import TaskList from "../svelte/TaskList.svelte";
     import CompletionChart from "../svelte/CompletionChart.svelte";
+    import ProgressOnSchedule from "../svelte/ProgressOnSchedule.svelte";
+    import CompletionRate from "../svelte/CompletionRate.svelte";
+    import BreakEven from "../svelte/BreakEven.svelte";
 
     export let plugin: TaskrPlugin;
     export let addBottomPadding: boolean = false;
@@ -20,6 +23,11 @@
 
 <Container addBottomPadding={addBottomPadding}>
     <CompletionChart plugin={plugin}/>
+    <div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll; margin-bottom: 10px;">
+        <ProgressOnSchedule {plugin} timePeriod="all-time" />
+        <CompletionRate {plugin} />
+        <BreakEven {plugin} />
+    </div>
     <TaskList
         tasks={tasks}
         plugin={plugin}

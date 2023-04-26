@@ -38,7 +38,7 @@
         display:flex;
         background-color:#141414;
         max-width:178px;
-        padding:10px;
+        padding: 3px 10px;
         align-items: center;
     }
 </style>
