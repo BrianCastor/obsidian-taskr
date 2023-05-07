@@ -9,9 +9,10 @@
     } from "date-fns";
     import { allTasksCache } from "../cache";
     import type { Task } from "src/task";
-    import type TaskrPlugin from "main";
+    import type TaskrPlugin from "../main";
     import ApexChart from "./ApexChart.svelte";
     import ButtonGroup from "./ButtonGroup.svelte";
+	import { GoalService } from "../goalService"
 
     export let plugin: TaskrPlugin;
 
@@ -159,17 +160,12 @@
             };
         });
 
-        let runningTotal2 = 0;
-        const series2Temp = eachDayOfInterval({
-            start: goalStartDate,
-            end: new Date(),
-        }).map((date: Date) => {
-            runningTotal2 += plugin.settings.DailyBandwidth;
+        const goalSeries = new GoalService(plugin).getGoalTimeSeriesAccum().map((value) => {
             return {
-                x: format(date, "yyyy-MM-dd"),
-                y: runningTotal2 - plugin.settings.DailyBandwidth,
-            };
-        });
+                x: format(value.date, "yyyy-MM-dd"),
+                y: value.value
+            }
+        })
 
         datasets = [
             {
@@ -178,7 +174,7 @@
                 type: "area",
             },
             {
-                data: series2Temp,
+                data: goalSeries,
                 name: "Goal",
                 type: "line",
             },

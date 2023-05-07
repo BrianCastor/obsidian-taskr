@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type TaskrPlugin from "../main";
+    import type TaskrPlugin from "../main"
     import { allTasksCache } from "../cache";
     import type { Task } from "../task";
     import Container from "../svelte/Container.svelte";

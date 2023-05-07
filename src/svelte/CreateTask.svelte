@@ -8,7 +8,7 @@
     import { onDestroy, onMount } from "svelte";
     import { FileSuggest } from "../components/fileSuggest";
     import type { App, TFile } from "obsidian";
-    import type TaskrPlugin from "main";
+    import type TaskrPlugin from "../main";
     import { allTasksCache } from "../cache";
     import { ENGLISH_STOPWORDS } from "../stopwords";
 

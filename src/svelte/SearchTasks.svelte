@@ -7,9 +7,7 @@
     import TaskListItem from "./TaskListItem.svelte";
 
     export let close: () => void;
-    export let app: App;
     export let plugin: TaskrPlugin;
-    export let modalEl: any;
 
     let inputEl: HTMLElement;
 
