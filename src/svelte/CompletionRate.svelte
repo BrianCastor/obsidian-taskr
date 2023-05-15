@@ -10,19 +10,8 @@
 	let completionRate: number = 0
 
 	allTasksCache.subscribe((tasks: Task[]) => {
-		const tasksCompletedInPeriod: Task[] = tasks.filter((task: Task) => {
-			return (
-				task.complete &&
-				task.completed_date &&
-				isAfter(task.completed_date, subDays(startOfDay(new Date()), 7))
-			)
-		})
-
-		const hoursCompleted =
-			tasksCompletedInPeriod.reduce((accumulator: number, task: Task) => {
-				return accumulator + (task.effort ?? 0)
-			}, 0) / 60
-		completionRate = hoursCompleted / 7
+		const gs = new GoalService(plugin)
+		completionRate = gs.getCompletionRatePerBusinessDay(tasks)
 	})
 
 	$: color = completionRate > new GoalService(plugin).dailyIncrement ? 'rgb(0,255,0)' : 'white'
@@ -33,9 +22,9 @@
 		>{Math.abs(Math.round(completionRate * 10) / 10)}</span
 	>
 	<div style="flex-grow:1; padding-left:10px;">
-		<span style="font-size:14px;white-space:nowrap">HR/DAY (W)</span>
+		<span style="font-size:14px;white-space:nowrap">Hours Per</span>
 		<br />
-		<span style={`color:${color};white-space:nowrap`}> Completed </span>
+		<span style={`white-space:nowrap`}> Workday </span>
 	</div>
 </div>
 

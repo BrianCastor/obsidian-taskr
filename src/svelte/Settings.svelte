@@ -2,9 +2,13 @@
 	import type { DayOfWeek } from '../types'
 	import type TaskrPlugin from '../main'
 	import { ALL_DAYS_OF_WEEK } from '../utils'
+	import { Modal } from 'obsidian'
+	import CalendarPopup from './CalendarPopup.svelte'
+	import { format, isEqual, startOfDay } from 'date-fns'
 
 	export let plugin: TaskrPlugin
 	let workingDays: DayOfWeek[] = plugin.settings.WorkingDays
+	let exemptDays: Date[] = plugin.settings.ExemptDays
 
 	function handleDayClicked(day: DayOfWeek) {
 		if (workingDays.includes(day)) {
@@ -13,7 +17,46 @@
 			workingDays = [...workingDays, day]
 		}
 		plugin.settings.WorkingDays = [...workingDays]
-		plugin.saveData(plugin.settings)
+		plugin.saveSettings()
+	}
+
+	function addExemptDate(date: Date) {
+		exemptDays = [...new Set([...exemptDays, startOfDay(date)])].sort(
+			(a, b) => b.getTime() - a.getTime()
+		)
+		plugin.settings.ExemptDays = exemptDays
+		plugin.saveSettings()
+	}
+
+	function removeExemptDate(date: Date) {
+		exemptDays = exemptDays.filter((dt: Date) => !isEqual(dt, date))
+		plugin.settings.ExemptDays = exemptDays
+		plugin.saveSettings()
+	}
+
+	const renderCalendar = () => {
+		const modal = new Modal(app)
+		modal.containerEl.style.padding = '0px'
+		modal.containerEl.addClass('taskr-calendar-modal')
+		modal.onOpen = () => {
+			const { titleEl, contentEl } = modal
+			new CalendarPopup({
+				target: contentEl,
+				props: {
+					date: undefined,
+					setDate: (dt) => {
+						dt && addExemptDate(dt)
+						modal.close()
+					}
+				}
+			})
+		}
+		modal.onClose = (): void => {
+			const { contentEl } = modal
+			contentEl.empty()
+		}
+
+		modal.open()
 	}
 </script>
 
@@ -50,5 +93,14 @@
 			incremented on these days.
 		</div>
 	</div>
-	<div style="display:flex; column-gap: 5px; row-gap: 5px; margin-top:10px" />
+	<div
+		style="display:flex; column-gap: 10px; row-gap: 5px; margin-top:10px; align-items: center; flex-wrap:wrap"
+	>
+		<button class="mod-cta" on:click={() => renderCalendar()}>Add</button>
+		{#each exemptDays as dt}
+			<button on:click={() => removeExemptDate(dt)}
+				>X&nbsp;&nbsp;{format(dt, 'yyyy-MM-dd')}</button
+			>
+		{/each}
+	</div>
 </div>

@@ -41,7 +41,8 @@
 		>{Math.abs(Math.round(difference * 10) / 10)}</span
 	>
 	<div style="flex-grow:1; padding-left:10px;">
-		<span style="font-size:14px;white-space:nowrap">{`Hour${difference === 1 ? '' : 's'}`}</span
+		<span style="font-size:14px;white-space:nowrap"
+			>{`Hour${Math.abs(Math.round(difference * 10) / 10) === 1 ? '' : 's'}`}</span
 		>
 		<br />
 		<span style={`color:${color};white-space:nowrap`}>

@@ -59,3 +59,13 @@ export const navigateToTaskPage = (pageType: string) => {
 	})
 	app.workspace.revealLeaf(existingLeaf)
 }
+
+export const reloadCurrentPage = () => {
+	const existingLeaf: WorkspaceLeaf | undefined =
+		app.workspace.getActiveViewOfType(TaskListView)?.leaf
+
+	if (existingLeaf && app.workspace.activeLeaf) {
+		//@ts-expect-error
+		app.workspace.activeLeaf.rebuildView()
+	}
+}

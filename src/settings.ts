@@ -12,6 +12,7 @@ export interface ISettings {
 	ProjectsDir: string
 	TaskCompletionStartDate: string
 	WorkingDays: DayOfWeek[]
+	ExemptDays: Date[]
 }
 
 const defaultSettings: ISettings = {
@@ -20,13 +21,16 @@ const defaultSettings: ISettings = {
 	PeopleDir: 'people',
 	ProjectsDir: 'projects',
 	TaskCompletionStartDate: format(new Date(), 'yyyy-MM-dd'),
-	WorkingDays: ALL_DAYS_OF_WEEK
+	WorkingDays: ALL_DAYS_OF_WEEK,
+	ExemptDays: []
 }
 
-export const settingsWithDefaults = (settings: Partial<ISettings>): ISettings => ({
-	...defaultSettings,
-	...settings
-})
+export const settingsWithDefaults = (settings: Partial<ISettings>): ISettings => {
+	return {
+		...defaultSettings,
+		...settings
+	}
+}
 
 export class SettingsTab extends PluginSettingTab {
 	plugin: TaskrPlugin
@@ -50,7 +54,7 @@ export class SettingsTab extends PluginSettingTab {
 				text.setPlaceholder('$').setValue(this.plugin.settings.TasksDir)
 				text.inputEl.onblur = (e: FocusEvent) => {
 					this.plugin.settings.TasksDir = (e.target as HTMLInputElement).value
-					this.plugin.saveData(this.plugin.settings)
+					this.plugin.saveSettings()
 				}
 			})
 
@@ -61,7 +65,7 @@ export class SettingsTab extends PluginSettingTab {
 				text.setPlaceholder('$').setValue(this.plugin.settings.PeopleDir)
 				text.inputEl.onblur = (e: FocusEvent) => {
 					this.plugin.settings.PeopleDir = (e.target as HTMLInputElement).value
-					this.plugin.saveData(this.plugin.settings)
+					this.plugin.saveSettings()
 				}
 			})
 
@@ -72,7 +76,7 @@ export class SettingsTab extends PluginSettingTab {
 				text.setPlaceholder('$').setValue(this.plugin.settings.ProjectsDir)
 				text.inputEl.onblur = (e: FocusEvent) => {
 					this.plugin.settings.ProjectsDir = (e.target as HTMLInputElement).value
-					this.plugin.saveData(this.plugin.settings)
+					this.plugin.saveSettings()
 				}
 			})
 
@@ -85,7 +89,7 @@ export class SettingsTab extends PluginSettingTab {
 				slider.setDynamicTooltip()
 				slider.onChange((value: number) => {
 					this.plugin.settings.DailyBandwidth = value
-					this.plugin.saveData(this.plugin.settings)
+					this.plugin.saveSettings()
 				})
 			})
 
@@ -104,7 +108,7 @@ export class SettingsTab extends PluginSettingTab {
 							parsedDate,
 							'yyyy-MM-dd'
 						)
-						this.plugin.saveData(this.plugin.settings)
+						this.plugin.saveSettings()
 					} catch {
 						alert(
 							`Please specify a date formatted as 'yyyy-MM-dd' in Task Completion Goal Start Date.`

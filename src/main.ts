@@ -17,7 +17,8 @@ import SingleTask from './svelte_pages/SingleTask.svelte'
 import CompletedTasks from './svelte_pages/CompletedTasks.svelte'
 import type { Task } from './task'
 import TasksReferencingThisPage from './svelte_pages/TasksReferencingThisPage.svelte'
-import { navigateToTaskPage } from './utils'
+import { navigateToTaskPage, reloadCurrentPage } from './utils'
+import { format, parse } from 'date-fns'
 
 export default class TaskrPlugin extends Plugin {
 	fileInterface: FileInterface
@@ -221,11 +222,20 @@ export default class TaskrPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = settingsWithDefaults(await this.loadData())
+		const data = await this.loadData()
+		if (data.ExemptDays) {
+			data.ExemptDays = data.ExemptDays.map((dateStr: string) =>
+				parse(dateStr, 'yyyy-MM-dd', new Date())
+			)
+		}
+		this.settings = settingsWithDefaults(data)
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings)
+		const data: any = { ...this.settings }
+		data.ExemptDays = data.ExemptDays.map((date: Date) => format(date, 'yyyy-MM-dd'))
+		await this.saveData(data)
+		reloadCurrentPage()
 	}
 
 	renderTaskBlockInMarkdown = (
