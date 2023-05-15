@@ -27,7 +27,7 @@
 			tasksCompletedInPeriod.reduce((accumulator: number, task: Task) => {
 				return accumulator + (task.effort ?? 0)
 			}, 0) / 60
-		const gs = new GoalService(plugin)
+		const gs = new GoalService(plugin.settings)
 		const hoursToCompleteByToday =
 			timePeriod === 'week' ? gs.hoursToCompleteThisWeekByToday() : gs.hoursToCompleteTotal()
 		difference = hoursCompleted - hoursToCompleteByToday

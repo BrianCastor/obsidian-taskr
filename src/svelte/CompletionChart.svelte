@@ -112,11 +112,7 @@
 			return
 		}
 
-		const goalStartDate = parse(
-			plugin.settings.TaskCompletionStartDate,
-			'yyyy-MM-dd',
-			new Date()
-		)
+		const goalStartDate = plugin.settings.TaskCompletionStartDate
 
 		const temp = Math.min(
 			...ts.map((t: Task) => {
@@ -147,12 +143,14 @@
 			}
 		})
 
-		const goalSeries = new GoalService(plugin).getGoalTimeSeriesAccum().map((value) => {
-			return {
-				x: format(value.date, 'yyyy-MM-dd'),
-				y: value.value
-			}
-		})
+		const goalSeries = new GoalService(plugin.settings)
+			.getGoalTimeSeriesAccum()
+			.map((value) => {
+				return {
+					x: format(value.date, 'yyyy-MM-dd'),
+					y: value.value
+				}
+			})
 
 		datasets = [
 			{

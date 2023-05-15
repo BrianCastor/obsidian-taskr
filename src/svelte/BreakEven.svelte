@@ -3,41 +3,41 @@
 	import type { Task } from '../task'
 	import { allTasksCache } from '../cache'
 	import { GoalService } from '../goalService'
+	import { isFuture, isPast, isToday } from 'date-fns'
+	import { formatDateRelativeToNow } from '../date_utils'
 
 	export let plugin: TaskrPlugin
 
-	let daysUntilComplete: number = 0
+	let completionDate: Date | undefined = undefined
+	let relaxUntil: Date | undefined = undefined
 
 	allTasksCache.subscribe((tasks: Task[]) => {
-		const gs = new GoalService(plugin)
-		daysUntilComplete = gs.projectCompletionInDays(tasks)
+		const gs = new GoalService(plugin.settings)
+		completionDate = gs.projectCompletionDate(tasks)
+		relaxUntil = gs.projectRelaxUntil(tasks)
 	})
 
 	const color = 'cyan'
 </script>
 
-{#if isFinite(daysUntilComplete) && daysUntilComplete > 0}
+{#if completionDate}
 	<div class="statistic-container">
-		<span style={`font-weight:bold; font-size:36px; color:${color}`}>{daysUntilComplete}</span>
-		<div style="flex-grow:1; padding-left:10px;">
-			<span style="font-size:14px;white-space:nowrap"
-				>{`Day${daysUntilComplete === 1 ? '' : 's'}`} Until</span
-			>
+		<div style="flex-grow:1;">
+			<span style="font-size:14px;white-space:nowrap">Break-Even</span>
 			<br />
-			<span style={`color:${color};white-space:nowrap`}> Break-Even </span>
+			<span style={`color:${color};white-space:nowrap`}
+				>{formatDateRelativeToNow(completionDate)}</span
+			>
 		</div>
 	</div>
 {/if}
 
-{#if daysUntilComplete < 0}
+{#if relaxUntil}
 	<div class="statistic-container">
-		<span style={`font-weight:bold; font-size:36px; color:rgb(0,255,0)`}
-			>{-daysUntilComplete}</span
-		>
-		<div style="flex-grow:1; padding-left:10px;">
-			<span style="font-size:14px">{`Day${-daysUntilComplete === 1 ? '' : 's'}`}</span>
+		<div style="flex-grow:1">
+			<span style="font-size:14px">Relax Until</span>
 			<br />
-			<span style={`color:rgb(0,255,0)`}> To Relax </span>
+			<span style={`color:rgb(0,255,0)`}>{formatDateRelativeToNow(relaxUntil)}</span>
 		</div>
 	</div>
 {/if}

@@ -228,12 +228,24 @@ export default class TaskrPlugin extends Plugin {
 				parse(dateStr, 'yyyy-MM-dd', new Date())
 			)
 		}
+		if (data.TaskCompletionStartDate) {
+			data.TaskCompletionStartDate = parse(
+				data.TaskCompletionStartDate,
+				'yyyy-MM-dd',
+				new Date()
+			)
+		} else {
+			data.TaskCompletionStartDate = new Date()
+		}
 		this.settings = settingsWithDefaults(data)
 	}
 
 	async saveSettings() {
 		const data: any = { ...this.settings }
 		data.ExemptDays = data.ExemptDays.map((date: Date) => format(date, 'yyyy-MM-dd'))
+		if (data.TaskCompletionStartDate) {
+			data.TaskCompletionStartDate = format(data.TaskCompletionStartDate, 'yyyy-MM-dd')
+		}
 		await this.saveData(data)
 		reloadCurrentPage()
 	}

@@ -64,6 +64,40 @@
 	style="border-top: 1px solid var(--background-modifier-border);margin-bottom:20px; padding-top:10px"
 >
 	<div class="setting-item-info">
+		<div class="setting-item-name">Task Completion Goal Start Date</div>
+		<div class="setting-item-description">
+			The date that the Task Completion goal starts incrementing
+		</div>
+	</div>
+	<div style="display:flex; column-gap: 5px; row-gap: 5px; margin-top:10px;flex-wrap:wrap">
+		<input disabled value={format(plugin.settings.TaskCompletionStartDate, 'yyyy-MM-dd')} />
+		<button on:click={() => renderCalendar()}>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="24"
+				height="24"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				class="svg-icon lucide-calendar"
+				><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line
+					x1="16"
+					y1="2"
+					x2="16"
+					y2="6"
+				/><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg
+			>
+		</button>
+	</div>
+</div>
+
+<div
+	style="border-top: 1px solid var(--background-modifier-border);margin-bottom:20px; padding-top:10px"
+>
+	<div class="setting-item-info">
 		<div class="setting-item-name">Working Days</div>
 		<div class="setting-item-description">
 			The days you expect to work towards your goals. Selected days will increment your

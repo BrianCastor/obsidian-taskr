@@ -10,11 +10,12 @@
 	let completionRate: number = 0
 
 	allTasksCache.subscribe((tasks: Task[]) => {
-		const gs = new GoalService(plugin)
+		const gs = new GoalService(plugin.settings)
 		completionRate = gs.getCompletionRatePerBusinessDay(tasks)
 	})
 
-	$: color = completionRate > new GoalService(plugin).dailyIncrement ? 'rgb(0,255,0)' : 'white'
+	$: color =
+		completionRate > new GoalService(plugin.settings).dailyIncrement ? 'rgb(0,255,0)' : 'white'
 </script>
 
 <div class="statistic-container">

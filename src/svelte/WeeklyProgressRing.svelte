@@ -20,7 +20,7 @@
 		})
 	})
 
-	const hoursToCompleteThisWeek = new GoalService(plugin).hoursToCompleteThisWeek()
+	const hoursToCompleteThisWeek = new GoalService(plugin.settings).hoursToCompleteThisWeek()
 
 	$: hoursCompletedThisWeek =
 		tasksCompletedThisWeek.reduce((accumulator: number, task: Task) => {

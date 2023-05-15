@@ -1,6 +1,5 @@
 import {
 	eachDayOfInterval,
-	parseISO,
 	format,
 	isSameDay,
 	subDays,
@@ -9,13 +8,12 @@ import {
 	isAfter,
 	startOfDay,
 	addDays,
-	differenceInDays,
 	endOfDay,
 	isBefore
 } from 'date-fns'
-import type TaskrPlugin from './main'
 import type { DayOfWeek } from './types'
 import type { Task } from './task'
+import type { ISettings } from './settings'
 
 interface TimeSeriesPoint {
 	date: Date
@@ -29,12 +27,11 @@ export class GoalService {
 	workingDays: DayOfWeek[]
 	exemptDays: Date[]
 
-	constructor(plugin: TaskrPlugin) {
-		this.startDate = parseISO(plugin.settings.TaskCompletionStartDate)
-		this.dailyIncrement = plugin.settings.DailyBandwidth
-		this.workingDays = plugin.settings.WorkingDays
-		this.exemptDays = plugin.settings.ExemptDays
-
+	constructor(settings: ISettings) {
+		this.startDate = settings.TaskCompletionStartDate
+		this.dailyIncrement = settings.DailyBandwidth
+		this.workingDays = settings.WorkingDays
+		this.exemptDays = settings.ExemptDays
 		this.effectiveDailyIncrement = this.dailyIncrement * (this.workingDays.length / 7)
 	}
 
@@ -122,60 +119,58 @@ export class GoalService {
 
 	getCompletionRatePerBusinessDay = (tasks: Task[]): number => {
 		const hoursCompleted = this.getTotalHoursCompleted(
-			this.getCompletedTasks(tasks, { startDate: subDays(new Date(), 7) })
+			this.getCompletedTasks(tasks, { startDate: startOfDay(subDays(new Date(), 6)) })
 		)
 
 		const totalWorkDays = eachDayOfInterval({
-			start: subDays(new Date(), 7),
-			end: new Date()
+			start: startOfDay(subDays(new Date(), 6)),
+			end: startOfDay(new Date())
 		}).filter((day: Date) => !this.isDayOff(day)).length
 
 		return hoursCompleted / totalWorkDays
 	}
 
-	projectCompletionInDays = (tasks: Task[]): number => {
+	projectRelaxUntil = (tasks: Task[]): Date | undefined => {
+		// We've completed more tasks than our goal - project how many days of inaction can happen before total hours completed falls below (rising) goal
 		const completedVSGoalDiff = this.getTotalHoursCompleted(tasks) - this.hoursToCompleteTotal()
 
-		if (completedVSGoalDiff >= 0) {
-			// We've completed more tasks than our goal - project how many days of inaction can happen before total hours completed falls below (rising) goal
-			let workingDaysLeft = Math.floor(completedVSGoalDiff / this.dailyIncrement)
+		if (completedVSGoalDiff < 0) return undefined // We haven't completed more tasks than goal, so can't relax
 
-			let date = addDays(startOfDay(new Date()), 1)
-			while (workingDaysLeft > 0) {
-				if (!this.isDayOff(date)) {
-					workingDaysLeft -= 1
-				}
-				date = addDays(date, 1)
+		let relaxDaysLeft = completedVSGoalDiff / this.dailyIncrement
+
+		// Starting at tomorrow, iterate through upcoming days
+		let relaxUntilDate = startOfDay(new Date())
+		while (relaxDaysLeft >= 0) {
+			relaxUntilDate = addDays(relaxUntilDate, 1)
+			if (!this.isDayOff(relaxUntilDate)) {
+				relaxDaysLeft -= 1
 			}
-			const totalDaysToRelax = -differenceInDays(
-				date,
-				//startOfDay(new Date())
-				addDays(startOfDay(new Date()), 1) // Assuming no additional work is done today
-			)
-			return totalDaysToRelax
+		}
+
+		return relaxUntilDate
+	}
+
+	projectCompletionDate = (tasks: Task[]): Date | undefined => {
+		// We've completed less tasks than our goal - project how many days it will take (including days off) to achieve the goal at our current rate of completion (avg. hrs/day over past week)
+		const completedVSGoalDiff = this.getTotalHoursCompleted(tasks) - this.hoursToCompleteTotal()
+
+		const projectedNetGainPerWorkDay =
+			this.getCompletionRatePerBusinessDay(tasks) - this.dailyIncrement
+
+		if (projectedNetGainPerWorkDay <= 0 || completedVSGoalDiff > 0) {
+			// Completion is not possible at current rate, or we've already completed enough
+			return undefined
 		} else {
-			// We've completed less tasks than our goal - project how many days it will take (including days off) to achieve the goal at our current rate of completion (avg. hrs/day over past week)
-			const projectedNetGainPerWorkDay =
-				this.getCompletionRatePerBusinessDay(tasks) - this.dailyIncrement
+			let workingDaysUntilAchieve = Math.abs(completedVSGoalDiff / projectedNetGainPerWorkDay)
 
-			if (projectedNetGainPerWorkDay <= 0) {
-				// Completion is not possible at current rate
-				return NaN
-			} else {
-				let workingDaysUntilAchieve = Math.ceil(
-					Math.abs(completedVSGoalDiff / projectedNetGainPerWorkDay)
-				)
-
-				let date = startOfDay(new Date())
-				while (workingDaysUntilAchieve > 0) {
-					if (!this.isDayOff(date)) {
-						workingDaysUntilAchieve -= 1
-					}
-					date = addDays(date, 1)
+			let breakEvenDate = startOfDay(new Date()) // Assuming no more work is done until tomorrow
+			while (workingDaysUntilAchieve > 0) {
+				breakEvenDate = addDays(breakEvenDate, 1)
+				if (!this.isDayOff(breakEvenDate)) {
+					workingDaysUntilAchieve -= 1
 				}
-				const totalDaysUntilAchieve = differenceInDays(date, startOfDay(new Date()))
-				return totalDaysUntilAchieve
 			}
+			return breakEvenDate
 		}
 	}
 

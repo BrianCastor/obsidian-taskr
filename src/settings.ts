@@ -1,6 +1,6 @@
 import { PluginSettingTab, type App, Setting } from 'obsidian'
 import type TaskrPlugin from './main'
-import { format, parse } from 'date-fns'
+import { startOfDay } from 'date-fns'
 import Settings from './svelte/Settings.svelte'
 import type { DayOfWeek } from './types'
 import { ALL_DAYS_OF_WEEK } from './utils'
@@ -10,7 +10,7 @@ export interface ISettings {
 	DailyBandwidth: number
 	PeopleDir: string
 	ProjectsDir: string
-	TaskCompletionStartDate: string
+	TaskCompletionStartDate: Date
 	WorkingDays: DayOfWeek[]
 	ExemptDays: Date[]
 }
@@ -20,7 +20,7 @@ const defaultSettings: ISettings = {
 	DailyBandwidth: 2,
 	PeopleDir: 'people',
 	ProjectsDir: 'projects',
-	TaskCompletionStartDate: format(new Date(), 'yyyy-MM-dd'),
+	TaskCompletionStartDate: startOfDay(new Date()),
 	WorkingDays: ALL_DAYS_OF_WEEK,
 	ExemptDays: []
 }
@@ -91,31 +91,6 @@ export class SettingsTab extends PluginSettingTab {
 					this.plugin.settings.DailyBandwidth = value
 					this.plugin.saveSettings()
 				})
-			})
-
-		new Setting(containerEl)
-			.setName('Task Completion Goal Start Date')
-			.setDesc(
-				'This indicates the date that the Task Completion goal starts incrementing (by the number in Daily Bandwidth. Format as yyyy-MM-dd (i.e. 2023-02-01)'
-			)
-			.addText((text) => {
-				text.setPlaceholder('$').setValue(this.plugin.settings.TaskCompletionStartDate)
-				text.inputEl.onblur = (e: FocusEvent) => {
-					const value = (e.target as HTMLInputElement).value
-					try {
-						const parsedDate: Date = parse(value, 'yyyy-MM-dd', new Date())
-						this.plugin.settings.TaskCompletionStartDate = format(
-							parsedDate,
-							'yyyy-MM-dd'
-						)
-						this.plugin.saveSettings()
-					} catch {
-						alert(
-							`Please specify a date formatted as 'yyyy-MM-dd' in Task Completion Goal Start Date.`
-						)
-						text.setValue(this.plugin.settings.TaskCompletionStartDate)
-					}
-				}
 			})
 
 		const svelteDiv = createDiv()
