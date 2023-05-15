@@ -22,9 +22,9 @@
 		>{Math.abs(Math.round(completionRate * 10) / 10)}</span
 	>
 	<div style="flex-grow:1; padding-left:10px;">
-		<span style="font-size:14px;white-space:nowrap">Hours Per</span>
+		<span style="font-size:14px;white-space:nowrap">HR/Workday</span>
 		<br />
-		<span style={`white-space:nowrap`}> Workday </span>
+		<span style={`white-space:nowrap;color:${color}`}> Completed </span>
 	</div>
 </div>
 

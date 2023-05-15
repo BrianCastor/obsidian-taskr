@@ -130,26 +130,28 @@ export class GoalService {
 			end: new Date()
 		}).filter((day: Date) => !this.isDayOff(day)).length
 
-		console.log(tasks, totalWorkDays, hoursCompleted)
-
 		return hoursCompleted / totalWorkDays
 	}
 
-	projectCompletionInDays = (tasks: Task[]) => {
+	projectCompletionInDays = (tasks: Task[]): number => {
 		const completedVSGoalDiff = this.getTotalHoursCompleted(tasks) - this.hoursToCompleteTotal()
 
 		if (completedVSGoalDiff >= 0) {
 			// We've completed more tasks than our goal - project how many days of inaction can happen before total hours completed falls below (rising) goal
 			let workingDaysLeft = Math.floor(completedVSGoalDiff / this.dailyIncrement)
 
-			let date = startOfDay(new Date())
+			let date = addDays(startOfDay(new Date()), 1)
 			while (workingDaysLeft > 0) {
 				if (!this.isDayOff(date)) {
 					workingDaysLeft -= 1
 				}
 				date = addDays(date, 1)
 			}
-			const totalDaysToRelax = -differenceInDays(date, startOfDay(new Date()))
+			const totalDaysToRelax = -differenceInDays(
+				date,
+				//startOfDay(new Date())
+				addDays(startOfDay(new Date()), 1) // Assuming no additional work is done today
+			)
 			return totalDaysToRelax
 		} else {
 			// We've completed less tasks than our goal - project how many days it will take (including days off) to achieve the goal at our current rate of completion (avg. hrs/day over past week)
