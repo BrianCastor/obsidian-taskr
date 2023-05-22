@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { eachDayOfInterval, format, parse, startOfDay, startOfToday, subDays } from 'date-fns'
+	import { eachDayOfInterval, format, startOfDay, startOfToday, subDays } from 'date-fns'
 	import { allTasksCache } from '../cache'
 	import type { Task } from 'src/task'
 	import type TaskrPlugin from '../main'
@@ -10,6 +10,7 @@
 	export let plugin: TaskrPlugin
 
 	let datasets: any[] = []
+	let filteredDatasets: any[] = []
 	let datePreset: string = 'All'
 
 	const presetToDaysAgo: Record<string, number | undefined> = {
@@ -41,7 +42,7 @@
 				colors: FONT_COLOR
 			}
 		},
-		series: datasets,
+		series: filteredDatasets,
 		yaxis: {
 			title: { text: 'Hours', style: { color: FONT_COLOR } },
 			opposite: true,
@@ -54,7 +55,8 @@
 				style: {
 					colors: FONT_COLOR
 				}
-			}
+			},
+			forceNiceScale: true
 		},
 		xaxis: {
 			type: 'datetime',
@@ -96,10 +98,18 @@
 	}
 
 	$: {
-		if (datePreset) {
-			const daysAgo = presetToDaysAgo[datePreset]
-			options.xaxis.min = daysAgo ? subDays(startOfToday(), daysAgo).getTime() : null
-		}
+		const daysAgo = presetToDaysAgo[datePreset]
+		const start = daysAgo ? subDays(startOfToday(), daysAgo) : undefined
+		options.xaxis.min = start?.getTime()
+
+		filteredDatasets = datasets.map((dataset: any) => {
+			return {
+				...dataset,
+				data: dataset.data.filter((point: any) =>
+					start ? point.x >= format(start, 'yyyy-MM-dd') : true
+				)
+			}
+		})
 	}
 
 	allTasksCache.subscribe((ts: Task[]) => {
@@ -120,7 +130,7 @@
 			}),
 			goalStartDate.getTime()
 		)
-		const startDate = startOfDay(new Date(temp))
+		const startDate = subDays(startOfDay(new Date(temp)), 1)
 
 		const groupedByDate = tasks.reduce(function (rv: Record<string, number>, task) {
 			const dt_string = format(task.completed_date ?? 0, 'yyyy-MM-dd')
@@ -129,7 +139,7 @@
 		}, {})
 
 		let runningTotal = 0
-		const seriesTemp = eachDayOfInterval({
+		const completedSeries = eachDayOfInterval({
 			start: startDate,
 			end: new Date()
 		}).map((date: Date) => {
@@ -154,7 +164,7 @@
 
 		datasets = [
 			{
-				data: seriesTemp,
+				data: completedSeries,
 				name: 'Completed',
 				type: 'area'
 			},
@@ -172,7 +182,7 @@
 	value={datePreset}
 	onChange={(value) => (datePreset = value)}
 />
-<ApexChart {datasets} chartOptions={options} />
+<ApexChart datasets={filteredDatasets} chartOptions={options} />
 
 <style>
 </style>
