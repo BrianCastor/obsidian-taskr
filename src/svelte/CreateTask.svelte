@@ -4,13 +4,14 @@
 	import DateChip from './DateChip.svelte'
 	import LoeChip from './LOE_Chip.svelte'
 	import ProjectSelector from './ProjectSelector.svelte'
-	import { allEfforts } from '../utils'
+	import { allEfforts, getEffort } from '../utils'
 	import { onDestroy, onMount } from 'svelte'
 	import { FileSuggest } from '../components/fileSuggest'
 	import type { App, TFile } from 'obsidian'
 	import type TaskrPlugin from '../main'
 	import { allTasksCache } from '../cache'
 	import { ENGLISH_STOPWORDS } from '../stopwords'
+	import { addDays, differenceInDays } from 'date-fns'
 
 	export let close: () => void
 	export let store: (task: Task) => void
@@ -26,11 +27,14 @@
 	let scheduled: Date | undefined
 	let effort: number | undefined
 	let project: string | undefined
-	//let backlinks: string[] = [];
+	let completed_date: Date | undefined
 
 	let inputEl: HTMLElement
 	let suggest: FileSuggest | undefined
 	let marked: string = ''
+
+	let suggestedTasks: Task[] = []
+	let showSuggestedTasks: boolean = true
 
 	const mentions_re = /\B@\w*/g
 	const hashtags_re = /\B#\w*/g
@@ -40,7 +44,8 @@
 		const newTask = new Task({
 			title: title,
 			due_date: due,
-			complete: false,
+			complete: !!completed_date,
+			completed_date: completed_date,
 			project: project,
 			scheduled_date: scheduled,
 			effort: effort
@@ -76,14 +81,30 @@
 				`by ${pd.text}`,
 				`By ${pd.text}`
 			]
+			const completedPossibilities = [
+				`Completed ${pd.text}`,
+				`completed ${pd.text}`,
+				`Finished ${pd.text}`,
+				`finished ${pd.text}`,
+				`Completed on ${pd.text}`,
+				`completed on ${pd.text}`,
+				`Finished on ${pd.text}`,
+				`finished on ${pd.text}`
+			]
 			const scheduledPossibilities = [`on ${pd.text}`, `On ${pd.text}`, pd.text]
 			const foundDue = duePossibilities.find((poss: string) => text.includes(poss))
+			const foundCompleted = completedPossibilities.find((poss: string) =>
+				text.includes(poss)
+			)
 			const foundScheduled = scheduledPossibilities.find((poss: string) =>
 				text.includes(poss)
 			)
 			if (foundDue) {
 				due = parsedDate
 				text = text.replace(foundDue, '')
+			} else if (foundCompleted) {
+				completed_date = parsedDate
+				text = text.replace(foundCompleted, '')
 			} else if (foundScheduled) {
 				scheduled = parsedDate
 				text = text.replace(foundScheduled, '')
@@ -97,7 +118,7 @@
 
 		//Get Effort
 		text.split(' ').map((term: string) => {
-			const matchingEffort = allEfforts().find(
+			const matchingEffort = allEfforts.find(
 				(t: any) => t.autoSuggestTerm?.toLowerCase() === term.toLowerCase().trim()
 			)
 			if (matchingEffort) {
@@ -125,7 +146,6 @@
 					return true
 				}
 				const compareTerms2 = tokenize(t.title)
-				let count = 0
 				const matchTerms: string[] = []
 				compareTerms1.forEach((term) => {
 					if (compareTerms2.includes(term)) matchTerms.push(term)
@@ -143,6 +163,38 @@
 			})
 		}
 
+		suggestedTasks = Object.values(
+			$allTasksCache
+				.filter((t: Task) => {
+					if (text) {
+						const compareTerms1 = tokenize(text)
+						const compareTerms2 = tokenize(t.title)
+						if (
+							compareTerms1.every((term) =>
+								compareTerms2.some((term2) => term2.includes(term))
+							)
+						) {
+							return true
+						} else {
+							return false
+						}
+					}
+					return true
+				})
+				.reduce((accum: Record<string, { task: Task; count: number }>, val: Task) => {
+					const cleanTitle = val.title.toLowerCase().trim()
+					if (cleanTitle in accum) {
+						accum[cleanTitle].count += 1
+					} else {
+						accum[cleanTitle] = { task: val, count: 1 }
+					}
+					return accum
+				}, {})
+		)
+			.sort((a, b) => b.count - a.count)
+			.map((val) => val.task)
+			.slice(0, 5)
+
 		if (taskMatch) {
 			if (!effort) {
 				//@ts-ignore
@@ -156,7 +208,6 @@
 
 		const mentions = [...(doc.documentElement.textContent ?? '').matchAll(mentions_re)]
 		const hashtags = [...(doc.documentElement.textContent ?? '').matchAll(hashtags_re)]
-		//backlinks = [...(doc.documentElement.textContent ?? '').matchAll(backlinks_re)].map((val) => val[0]);
 		const currentMention = getCurrentToken(mentions)
 		const currentHashtag = getCurrentToken(hashtags)
 
@@ -183,7 +234,6 @@
 
 		text = text.replace(mentions_re, '')
 		text = text.replace(hashtags_re, '')
-		//text = text.replace(backlinks_re, '')
 		title = text.trim()
 
 		marked = textContent
@@ -206,6 +256,10 @@
 
 	function onSetProject(pj: string | undefined) {
 		project = pj
+		inputEl.focus()
+	}
+	function onSetCompletedDate(dt: Date | undefined) {
+		completed_date = dt
 		inputEl.focus()
 	}
 
@@ -276,6 +330,18 @@
 		}, 50)
 	}
 
+	const copyTask = (t: Task) => {
+		showSuggestedTasks = false
+		title = t.title
+		inputHTML = t.title
+		effort = t.effort
+		project = t.project
+		if (t.created_date && t.scheduled_date) {
+			scheduled = addDays(Date.now(), differenceInDays(t.scheduled_date, t.created_date))
+		}
+		inputEl.focus()
+	}
+
 	onMount(() => {
 		suggest = new FileSuggest(app, app.scope, plugin, inputEl, onSuggestSelect)
 		modalEl.addEventListener('click', () => suggest?.close())
@@ -297,20 +363,67 @@
 	/>
 	<div class="highlight-overlay" contenteditable bind:innerHTML={marked} />
 </div>
-<div style="width:100%;margin-top:10px">
+<div
+	style="width:100%;margin-top:10px;display:flex;justify-content:space-between; margin-bottom:10px"
+>
 	<div style="display:flex; alignItems:center; margin-top:5px;flex-wrap:wrap;row-gap:10px;">
 		<DateChip date={scheduled} setDate={onSetScheduledDate} emoji={'ON'} size="normal" />
 		<DateChip date={due} setDate={onSetDueDate} emoji={'DUE'} size="normal" />
 		<LoeChip {effort} setEffort={onSetEffort} size="small" />
 		<ProjectSelector {project} setProject={onSetProject} size="small" />
+		{#if completed_date}
+			<DateChip
+				date={completed_date}
+				setDate={onSetCompletedDate}
+				emoji={'✅'}
+				size="normal"
+			/>
+		{/if}
 	</div>
 </div>
+<div style="width:100%; position: relative;padding:5px">
+	<div
+		style="color:lightgrey;font-size:12px;font-weight:bold;margin-bottom:5px;cursor:pointer"
+		on:click={() => (showSuggestedTasks = !showSuggestedTasks)}
+	>
+		Suggested Tasks {showSuggestedTasks ? '▼' : '►'}
+	</div>
+	{#if showSuggestedTasks}
+		{#each suggestedTasks.reverse() as task (task.id)}
+			<div class="copy-task" on:click={() => copyTask(task)}>
+				<div>{task.title}</div>
+				<div style={`color:${getEffort(task.effort)?.color ?? 'grey'}`}>
+					{getEffort(task.effort)?.icon}
+				</div>
+			</div>
+		{/each}
+		{#each { length: 5 - suggestedTasks.length } as _, i}
+			<div class="copy-task disabled">&nbsp;</div>
+		{/each}
+	{/if}
+</div>
 
-<div style="width:100%;margin-top:10px">
+<div style="width:100%;margin-top:5px">
 	<button class="button" on:click={save} style="width:100%;height:40px">Save</button>
 </div>
 
 <style>
+	.copy-task {
+		font-size: 12px;
+		display: flex;
+		justify-content: space-between;
+		cursor: pointer;
+		padding: 8px;
+	}
+	.copy-task:hover {
+		background-color: rgb(50, 50, 50);
+	}
+	.copy-task.disabled {
+		cursor: auto;
+	}
+	.copy-task.disabled:hover {
+		background-color: none;
+	}
 	.task-input {
 		width: 100%;
 		border: 1px solid rgb(54, 54, 54);

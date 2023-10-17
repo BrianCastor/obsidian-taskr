@@ -28,15 +28,47 @@ export const sortTasksByDate = (tasks: Task[], reverse = false) => {
 	return ts
 }
 
-export const allEfforts = (): any => {
-	return [
-		{ icon: '10m', value: 10, label: 'Up to 10 mins', autoSuggestTerm: 'trivial' },
-		{ icon: '30m', value: 30, label: 'Up to 30 mins', autoSuggestTerm: 'easy' },
-		{ icon: '1h', value: 60, label: 'Up to 1 hour', autoSuggestTerm: 'medium' },
-		{ icon: '2h', value: 120, label: 'Up to 2 hours', autoSuggestTerm: 'hard' },
-		{ icon: '4h', value: 240, label: 'Up to 4 hours', autoSuggestTerm: 'vhard' },
-		{ icon: '?', value: undefined, label: 'Remove', autoSuggestTerm: undefined }
-	]
+export const allEfforts: any = [
+	{
+		icon: '10m',
+		value: 10,
+		label: 'Up to 10 mins',
+		autoSuggestTerm: ':10',
+		color: 'rgb(60,250,60)'
+	},
+	{
+		icon: '30m',
+		value: 30,
+		label: 'Up to 30 mins',
+		autoSuggestTerm: ':30',
+		color: 'rgb(30,235,250)'
+	},
+	{
+		icon: '1h',
+		value: 60,
+		label: 'Up to 1 hour',
+		autoSuggestTerm: ':60',
+		color: 'rgb(255, 255, 20)'
+	},
+	{
+		icon: '2h',
+		value: 120,
+		label: 'Up to 2 hours',
+		autoSuggestTerm: ':180',
+		color: 'rgb(255,87,51)'
+	},
+	{
+		icon: '4h',
+		value: 240,
+		label: 'Up to 4 hours',
+		autoSuggestTerm: ':560',
+		color: 'rgb(255,20,255)'
+	},
+	{ icon: '?', value: undefined, label: 'Remove', autoSuggestTerm: undefined, color: 'grey' }
+]
+
+export const getEffort = (effort: number | undefined) => {
+	return allEfforts.find((option: any) => option.value === effort)
 }
 
 export const navigateToTaskPage = (pageType: string) => {

@@ -79,7 +79,8 @@
 			borderColor: 'rgba(150,150,150,.2)'
 		},
 		stroke: {
-			curve: 'straight'
+			curve: 'straight',
+			width: 2
 		},
 		tooltip: {
 			theme: 'dark'
