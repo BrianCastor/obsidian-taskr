@@ -82,9 +82,6 @@ export class Task implements ITask {
 			.slice(fileContent.split('---', 3).join('---').length + 3)
 			.trim().length
 
-		//const backlinksLine = restOfFile.split('\n').find((row: string) => row.trim().startsWith('::links')) || '';
-		//const backlinks = [...backlinksLine.matchAll(backlinks_re)].map((val) => val[0])
-
 		return new Task({
 			id: params.id,
 			title: title,

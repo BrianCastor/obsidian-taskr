@@ -193,7 +193,7 @@
 		)
 			.sort((a, b) => b.count - a.count)
 			.map((val) => val.task)
-			.slice(0, 5)
+			.slice(0, 25)
 
 		if (taskMatch) {
 			if (!effort) {
@@ -383,23 +383,33 @@
 </div>
 <div style="width:100%; position: relative;padding:5px">
 	<div
-		style="color:lightgrey;font-size:12px;font-weight:bold;margin-bottom:5px;cursor:pointer"
+		style="color:lightgrey;font-size:12px;font-weight:bold;margin-bottom:5px;cursor:pointer;"
 		on:click={() => (showSuggestedTasks = !showSuggestedTasks)}
 	>
 		Suggested Tasks {showSuggestedTasks ? '▼' : '►'}
 	</div>
 	{#if showSuggestedTasks}
-		{#each suggestedTasks.reverse() as task (task.id)}
-			<div class="copy-task" on:click={() => copyTask(task)}>
-				<div>{task.title}</div>
-				<div style={`color:${getEffort(task.effort)?.color ?? 'grey'}`}>
-					{getEffort(task.effort)?.icon}
+		<div
+			style="height:160px; overflow-y: scroll; display: flex; flex-direction: column-reverse; border: 1px solid rgb(50,50,50); border-radius: 4px;"
+		>
+			{#each suggestedTasks as task (task.id)}
+				<div class="copy-task" on:click={() => copyTask(task)}>
+					<div>{task.title}</div>
+					<div style={`color:${getEffort(task.effort)?.color ?? 'grey'}`}>
+						{getEffort(task.effort)?.icon}
+					</div>
 				</div>
-			</div>
-		{/each}
-		{#each { length: 5 - suggestedTasks.length } as _, i}
-			<div class="copy-task disabled">&nbsp;</div>
-		{/each}
+			{/each}
+			{#if suggestedTasks.length === 0}
+				<div
+					style="text-align:center; height: 100%; display: flex; justify-content: center; align-items: center"
+				>
+					<span style="font-style:italic; color: grey; font-size:12px"
+						>No matching tasks found.</span
+					>
+				</div>
+			{/if}
+		</div>
 	{/if}
 </div>
 
@@ -413,7 +423,8 @@
 		display: flex;
 		justify-content: space-between;
 		cursor: pointer;
-		padding: 8px;
+		padding: 12px;
+		border-top: 1px solid rgb(30, 30, 30);
 	}
 	.copy-task:hover {
 		background-color: rgb(50, 50, 50);
