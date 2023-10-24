@@ -364,7 +364,7 @@
 	<div class="highlight-overlay" contenteditable bind:innerHTML={marked} />
 </div>
 <div
-	style="width:100%;margin-top:10px;display:flex;justify-content:space-between; margin-bottom:10px"
+	style="width:100%;margin-top:5px;display:flex;justify-content:space-between; margin-bottom:4px"
 >
 	<div style="display:flex; alignItems:center; margin-top:5px;flex-wrap:wrap;row-gap:10px;">
 		<DateChip date={scheduled} setDate={onSetScheduledDate} emoji={'ON'} size="normal" />
@@ -383,7 +383,7 @@
 </div>
 <div style="width:100%; position: relative;padding:5px">
 	<div
-		style="color:lightgrey;font-size:12px;font-weight:bold;margin-bottom:5px;cursor:pointer;"
+		style="color:lightgrey;font-size:12px;font-weight:bold;cursor:pointer;margin-bottom:4px"
 		on:click={() => (showSuggestedTasks = !showSuggestedTasks)}
 	>
 		Suggested Tasks {showSuggestedTasks ? '▼' : '►'}
@@ -413,8 +413,8 @@
 	{/if}
 </div>
 
-<div style="width:100%;margin-top:5px">
-	<button class="button" on:click={save} style="width:100%;height:40px">Save</button>
+<div style="width:100%;margin-top:3px">
+	<button class="button" on:click={save} style="width:100%;height:30px">Save</button>
 </div>
 
 <style>
@@ -426,21 +426,12 @@
 		padding: 12px;
 		border-top: 1px solid rgb(30, 30, 30);
 	}
-	.copy-task:hover {
-		background-color: rgb(50, 50, 50);
-	}
-	.copy-task.disabled {
-		cursor: auto;
-	}
-	.copy-task.disabled:hover {
-		background-color: none;
-	}
 	.task-input {
 		width: 100%;
 		border: 1px solid rgb(54, 54, 54);
 		background-color: rgba(1, 1, 1, 0.2);
 		border-radius: 4px;
-		padding: 10px;
+		padding: 8px;
 		z-index: 1 !important;
 		position: relative;
 	}
@@ -453,7 +444,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		padding: 10px;
+		padding: 8px;
 		z-index: 0 !important;
 		border: 1px solid rgba(0, 0, 0, 0);
 		border-radius: 4px;
