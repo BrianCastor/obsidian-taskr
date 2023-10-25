@@ -31,6 +31,9 @@
 			},
 			zoom: {
 				enabled: false
+			},
+			animations: {
+				enabled: false
 			}
 		},
 		dataLabels: {
