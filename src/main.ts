@@ -5,7 +5,7 @@ import {
 	type MarkdownPostProcessorContext,
 	ButtonComponent
 } from 'obsidian'
-import { allProjectsCache, allTasksCache } from './cache'
+import { allHabitsCache, allProjectsCache, allTasksCache } from './cache'
 import { TaskListView, TASK_LIST_TYPES } from './components/taskListView'
 import { TaskModal } from './components/taskModal'
 import { SearchModal } from './components/searchModal'
@@ -19,6 +19,7 @@ import type { Task } from './task'
 import TasksReferencingThisPage from './svelte_pages/TasksReferencingThisPage.svelte'
 import { navigateToTaskPage, reloadCurrentPage } from './utils'
 import { format, parse } from 'date-fns'
+import type { Habit } from './habit'
 
 export default class TaskrPlugin extends Plugin {
 	fileInterface: FileInterface
@@ -94,6 +95,18 @@ export default class TaskrPlugin extends Plugin {
 				navigateToTaskPage(TASK_LIST_TYPES.incomplete)
 			})
 		}
+		const bn = document.getElementsByClassName('mobile-navbar-action')[2] as HTMLElement
+		if (bn) {
+			const newElem = document.createElement('div')
+			bn.after(newElem)
+			const b = new ButtonComponent(newElem)
+			b.setIcon('home')
+			b.setClass('clickable-icon')
+			b.setClass('mod-tappable')
+			b.onClick((e: MouseEvent) => {
+				navigateToTaskPage(TASK_LIST_TYPES.today)
+			})
+		}
 
 		const typesToLabels = {
 			[TASK_LIST_TYPES.today]: {
@@ -135,6 +148,9 @@ export default class TaskrPlugin extends Plugin {
 		})
 		this.fileInterface.getAllProjects().then((projects) => {
 			allProjectsCache.set(projects)
+		})
+		this.fileInterface.getAllHabits().then((habits) => {
+			allHabitsCache.set(habits)
 		})
 
 		// Syncs file events to our svelte caches
@@ -206,6 +222,38 @@ export default class TaskrPlugin extends Plugin {
 				if (file instanceof TFile && file.parent?.name == this.settings.ProjectsDir) {
 					const projects: Project[] = await this.fileInterface.getAllProjects()
 					allProjectsCache.set(projects)
+				}
+			})
+		)
+
+		this.registerEvent(
+			this.app.metadataCache.on('changed', async (file: TAbstractFile) => {
+				if (file instanceof TFile && file.parent?.name == this.settings.HabitsDir) {
+					const habit: Habit = await this.fileInterface.getHabitFromFile(file)
+					allHabitsCache.update((habits) => [
+						...habits.filter((h: Habit) => h.id !== habit.id),
+						habit
+					])
+				}
+			})
+		)
+
+		this.registerEvent(
+			this.app.metadataCache.on('deleted', async (file: TAbstractFile) => {
+				if (file instanceof TFile && file.path.contains(this.settings.HabitsDir)) {
+					const habit: Habit = await this.fileInterface.getHabitFromFile(file)
+					allHabitsCache.update((habits) =>
+						habits.filter((h: Habit) => h.id !== habit.id)
+					)
+				}
+			})
+		)
+
+		this.registerEvent(
+			this.app.vault.on('rename', async (file: TAbstractFile, oldPath: string) => {
+				if (file instanceof TFile && file.parent?.name == this.settings.HabitsDir) {
+					const habits: Habit[] = await this.fileInterface.getAllHabits()
+					allHabitsCache.set(habits)
 				}
 			})
 		)

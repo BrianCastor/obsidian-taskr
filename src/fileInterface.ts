@@ -3,6 +3,8 @@ import { TFile, type App, stringifyYaml } from 'obsidian'
 import { Project } from './project'
 import { Task } from './task'
 import { format, parse } from 'date-fns'
+import { Habit } from './habit'
+import { RRule } from 'rrule'
 
 export class FileInterface {
 	plugin: TaskrPlugin
@@ -158,5 +160,81 @@ export class FileInterface {
 			.map((file: TFile) => file.basename)
 
 		return taskIds
+	}
+
+	getHabitFromFile = async (file: TFile): Promise<Habit> => {
+		const fileMetadata = this.app.metadataCache.getFileCache(file)
+
+		const frontmatter = fileMetadata?.frontmatter
+
+		if (!frontmatter) {
+			//@ts-expect-error
+			return undefined
+		}
+
+		return new Habit({
+			id: frontmatter.id,
+			title: frontmatter.title,
+			recurrence: RRule.fromString(frontmatter.recurrence),
+			quantity: frontmatter.quantity,
+			effort: frontmatter.effort,
+			created_date:
+				frontmatter.created_date &&
+				parse(frontmatter.created_date, 'yyyy-MM-dd', new Date()),
+			project: frontmatter.project,
+			completion_dates: (frontmatter.completion_dates ?? '')
+				.split(',')
+				.filter((val: string) => val !== '')
+				.map((dt: string) => parse(dt, 'yyyy-MM-dd', new Date()))
+		})
+	}
+
+	getAllHabitFiles = (): TFile[] => {
+		return this.plugin.app.vault
+			.getMarkdownFiles()
+			.filter((f: TFile) => f.parent?.name === this.plugin.settings.HabitsDir)
+	}
+
+	getAllHabits = async (): Promise<Habit[]> => {
+		const habitFiles: TFile[] = this.getAllHabitFiles()
+
+		const habits: Habit[] = []
+		for (const tf of habitFiles) {
+			const habit = await this.getHabitFromFile(tf)
+			habits.push(habit)
+		}
+		return habits
+	}
+
+	createUpdateHabit = async (habit: Habit) => {
+		const habitsDir = this.plugin.settings.HabitsDir
+		const fileName = `${habitsDir}/${habit.id}.md`
+
+		if (!(await this.app.vault.adapter.exists(habitsDir))) {
+			await this.app.vault.createFolder(habitsDir)
+		}
+
+		const habitYaml = {
+			title: habit.title,
+			id: habit.id,
+			created_date: habit.created_date && format(habit.created_date, 'yyyy-MM-dd'),
+			recurrence: habit.recurrence.toString(),
+			quantity: habit.quantity,
+			effort: habit.effort,
+			project: habit.project,
+			completion_dates: habit.completion_dates.map((dt) => format(dt, 'yyyy-MM-dd')).join(',')
+		}
+
+		const existingFile = await this.app.vault.getAbstractFileByPath(fileName)
+
+		if (existingFile && existingFile instanceof TFile) {
+			this.app.fileManager.processFrontMatter(existingFile, (frontmatter) => {
+				frontmatter = Object.assign(frontmatter, habitYaml)
+			})
+		} else {
+			const yamlString = stringifyYaml(habitYaml)
+			const content = `---\n${yamlString}---\n\n`
+			await this.app.vault.create(fileName, content)
+		}
 	}
 }

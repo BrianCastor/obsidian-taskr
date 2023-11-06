@@ -10,6 +10,7 @@ export interface ISettings {
 	DailyBandwidth: number
 	PeopleDir: string
 	ProjectsDir: string
+	HabitsDir: string
 	TaskCompletionStartDate: Date
 	WorkingDays: DayOfWeek[]
 	ExemptDays: Date[]
@@ -20,6 +21,7 @@ const defaultSettings: ISettings = {
 	DailyBandwidth: 2,
 	PeopleDir: 'people',
 	ProjectsDir: 'projects',
+	HabitsDir: 'habits',
 	TaskCompletionStartDate: startOfDay(new Date()),
 	WorkingDays: ALL_DAYS_OF_WEEK,
 	ExemptDays: []
@@ -76,6 +78,17 @@ export class SettingsTab extends PluginSettingTab {
 				text.setPlaceholder('$').setValue(this.plugin.settings.ProjectsDir)
 				text.inputEl.onblur = (e: FocusEvent) => {
 					this.plugin.settings.ProjectsDir = (e.target as HTMLInputElement).value
+					this.plugin.saveSettings()
+				}
+			})
+
+		new Setting(containerEl)
+			.setName('Habits Directory')
+			.setDesc('The vault directory in which to store habits')
+			.addText((text) => {
+				text.setPlaceholder('$').setValue(this.plugin.settings.HabitsDir)
+				text.inputEl.onblur = (e: FocusEvent) => {
+					this.plugin.settings.HabitsDir = (e.target as HTMLInputElement).value
 					this.plugin.saveSettings()
 				}
 			})
