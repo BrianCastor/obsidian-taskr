@@ -29,7 +29,7 @@ export default class TaskrPlugin extends Plugin {
 
 		await this.loadSettings()
 
-		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this))
+		this.app.workspace.onLayoutReady(this.layoutReady.bind(this))
 
 		this.addRibbonIcon('plus-square', 'New Task (TASKR)', () => {
 			new TaskModal(this.app, this).open()
@@ -126,9 +126,20 @@ export default class TaskrPlugin extends Plugin {
 		this.addSettingTab(new SettingsTab(this.app, this))
 
 		this.registerMarkdownCodeBlockProcessor('taskr', this.renderTaskBlockInMarkdown)
+	}
 
+	layoutReady() {
+		// Load our svelte caches from files
+		this.fileInterface.getAllTasks().then((tasks) => {
+			allTasksCache.set(tasks)
+		})
+		this.fileInterface.getAllProjects().then((projects) => {
+			allProjectsCache.set(projects)
+		})
+
+		// Syncs file events to our svelte caches
 		this.registerEvent(
-			this.app.vault.on('modify', async (file: TAbstractFile) => {
+			this.app.metadataCache.on('changed', async (file: TAbstractFile) => {
 				if (file instanceof TFile && file.parent?.name == this.settings.TasksDir) {
 					const task: Task = await this.fileInterface.getTaskFromFile(file)
 					allTasksCache.update((tasks) => [
@@ -140,19 +151,10 @@ export default class TaskrPlugin extends Plugin {
 		)
 
 		this.registerEvent(
-			this.app.vault.on('delete', async (file: TAbstractFile) => {
+			this.app.metadataCache.on('deleted', async (file: TAbstractFile) => {
 				if (file instanceof TFile && file.path.contains(this.settings.TasksDir)) {
 					const task: Task = await this.fileInterface.getTaskFromFile(file)
 					allTasksCache.update((tasks) => tasks.filter((t: Task) => t.id !== task.id))
-				}
-			})
-		)
-
-		this.registerEvent(
-			this.app.vault.on('create', async (file: TAbstractFile) => {
-				if (file instanceof TFile && file.parent?.name == this.settings.TasksDir) {
-					const task: Task = await this.fileInterface.getTaskFromFile(file)
-					allTasksCache.update((tasks) => [...tasks, task])
 				}
 			})
 		)
@@ -202,16 +204,11 @@ export default class TaskrPlugin extends Plugin {
 			this.app.vault.on('rename', async (file: TAbstractFile, oldPath: string) => {
 				//TODO - rename all project assignments on Tasks to new project name
 				if (file instanceof TFile && file.parent?.name == this.settings.ProjectsDir) {
-					const projects: Project[] = this.fileInterface.getAllProjects()
+					const projects: Project[] = await this.fileInterface.getAllProjects()
 					allProjectsCache.set(projects)
 				}
 			})
 		)
-	}
-
-	async onLayoutReady(): Promise<void> {
-		await this.fileInterface.getAllTasks()
-		await this.fileInterface.getAllProjects()
 	}
 
 	onunload() {

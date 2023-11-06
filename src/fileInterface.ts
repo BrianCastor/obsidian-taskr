@@ -1,7 +1,8 @@
 import type TaskrPlugin from './main'
-import { TFile, type App } from 'obsidian'
+import { TFile, type App, stringifyYaml } from 'obsidian'
 import { Project } from './project'
 import { Task } from './task'
+import { format, parse } from 'date-fns'
 
 export class FileInterface {
 	plugin: TaskrPlugin
@@ -22,8 +23,33 @@ export class FileInterface {
 	}
 
 	getTaskFromFile = async (f: TFile): Promise<Task> => {
-		const fileContent = await this.plugin.app.vault.cachedRead(f)
-		return Task.fromFileContent(fileContent)
+		const fileMetadata = this.app.metadataCache.getFileCache(f)
+
+		const frontmatter = fileMetadata?.frontmatter
+
+		if (!frontmatter) {
+			//@ts-expect-error
+			return undefined
+		}
+
+		return new Task({
+			id: frontmatter.id,
+			title: frontmatter.title,
+			due_date: frontmatter.due_date && parse(frontmatter.due_date, 'yyyy-MM-dd', new Date()),
+			complete: frontmatter.complete ? true : false,
+			project: frontmatter.project,
+			scheduled_date:
+				frontmatter.scheduled_date &&
+				parse(frontmatter.scheduled_date, 'yyyy-MM-dd', new Date()),
+			completed_date:
+				frontmatter.completed_date &&
+				parse(frontmatter.completed_date, 'yyyy-MM-dd', new Date()),
+			created_date:
+				frontmatter.created_date &&
+				parse(frontmatter.created_date, 'yyyy-MM-dd', new Date()),
+			effort: frontmatter.effort,
+			contentLength: (fileMetadata.sections?.length ?? 0) - 2 // Subtract the YAML and code sections we inject
+		})
 	}
 
 	getAllTasks = async (): Promise<Task[]> => {
@@ -45,28 +71,31 @@ export class FileInterface {
 			await this.app.vault.createFolder(tasksDir)
 		}
 
+		const taskYaml = {
+			title: task.title,
+			complete: task.complete,
+			id: task.id,
+			due_date: task.due_date && format(task.due_date, 'yyyy-MM-dd'),
+			scheduled_date: task.scheduled_date && format(task.scheduled_date, 'yyyy-MM-dd'),
+			completed_date: task.completed_date && format(task.completed_date, 'yyyy-MM-dd'),
+			created_date: task.created_date && format(task.created_date, 'yyyy-MM-dd'),
+			effort: task.effort,
+			project: task.project
+		}
+
 		const existingFile = await this.app.vault.getAbstractFileByPath(fileName)
 
 		if (existingFile && existingFile instanceof TFile) {
-			//Replace pretty much only the frontmatter
-			let existingContent = await this.app.vault.read(existingFile)
-			const content = task.toFileContent()
-			existingContent = existingContent.slice(
-				existingContent.split('---', 3).join('---').length + 3
-			) //TODO - this not very resilient
-			existingContent = content + existingContent
-			await this.app.vault.modify(existingFile, existingContent)
+			this.app.fileManager.processFrontMatter(existingFile, (frontmatter) => {
+				frontmatter = Object.assign(frontmatter, taskYaml)
+			})
 		} else {
 			task.created_date = new Date()
-			const content = task.toFileContent()
+			const yamlString = stringifyYaml(taskYaml)
+			const taskWidgetString = '```taskr\nid: ' + task.id + '\n```'
+			const content = `---\n${yamlString}---\n${taskWidgetString}\n\n`
 			await this.app.vault.create(fileName, content)
 		}
-	}
-
-	getTaskById = async (id: string): Promise<Task> => {
-		const allTasks = await this.getAllTasks()
-		const matches = allTasks.filter((t: Task) => t.id === id)
-		return matches[0]
 	}
 
 	getTaskFileById = (id: string): TFile => {
@@ -95,7 +124,7 @@ export class FileInterface {
 		return projectFiles
 	}
 
-	getAllProjects = (): Project[] => {
+	getAllProjects = async (): Promise<Project[]> => {
 		const projectFiles: TFile[] = this.getAllProjectFiles()
 
 		const projects: Project[] = []
