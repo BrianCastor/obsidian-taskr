@@ -3,15 +3,18 @@
 	import { allTasksCache } from '../cache'
 	import type { Task } from 'src/task'
 	import type TaskrPlugin from '../main'
-	import ApexChart from './ApexChart.svelte'
 	import ButtonGroup from './ButtonGroup.svelte'
 	import { GoalService } from '../goalService'
+	import { onDestroy, onMount } from 'svelte'
+	import { FixedScaleAxis, LineChart, type SeriesObject } from 'chartist'
 
 	export let plugin: TaskrPlugin
 
-	let datasets: any[] = []
-	let filteredDatasets: any[] = []
+	let datasets: SeriesObject[] = []
+	let filteredDatasets: SeriesObject[] = []
 	let datePreset: string = 'All'
+	let chart: LineChart | undefined
+	let chartEl: HTMLElement
 
 	const presetToDaysAgo: Record<string, number | undefined> = {
 		W: 7,
@@ -21,99 +24,50 @@
 		All: undefined
 	}
 
-	const FONT_COLOR = 'rgba(140,150,150,.5)'
-
-	let options: any = {
-		chart: {
-			height: 220,
-			toolbar: {
-				show: false
+	onMount(() => {
+		chart = new LineChart(
+			chartEl,
+			{
+				series: filteredDatasets
 			},
-			zoom: {
-				enabled: false
-			},
-			animations: {
-				enabled: false
-			}
-		},
-		dataLabels: {
-			enabled: false
-		},
-		legend: {
-			show: true,
-			labels: {
-				colors: FONT_COLOR
-			}
-		},
-		series: filteredDatasets,
-		yaxis: {
-			title: { text: 'Hours', style: { color: FONT_COLOR } },
-			opposite: true,
-			labels: {
-				formatter: function (value: number) {
-					return value.toLocaleString('us-EN', {
-						maximumFractionDigits: 1
-					})
+			{
+				axisX: {
+					type: FixedScaleAxis,
+					divisor: 5,
+					labelInterpolationFnc: (value) =>
+						new Date(value).toLocaleString(undefined, {
+							month: 'short',
+							year: '2-digit'
+						}),
+					showGrid: false
 				},
-				style: {
-					colors: FONT_COLOR
-				}
-			},
-			forceNiceScale: true
-		},
-		xaxis: {
-			type: 'datetime',
-			max: startOfToday().getTime(),
-			labels: {
-				style: {
-					colors: FONT_COLOR
-				}
-			},
-			axisBorder: {
-				show: false
-			},
-			axisTicks: {
-				show: true,
-				color: 'rgba(150,150,150,.4)'
+				axisY: {
+					showGrid: true,
+					showLabel: true,
+					position: 'end'
+				},
+				height: 220,
+				showArea: true
 			}
-		},
-		grid: {
-			show: true,
-			borderColor: 'rgba(150,150,150,.2)'
-		},
-		stroke: {
-			curve: 'straight',
-			width: 2
-		},
-		tooltip: {
-			theme: 'dark'
-		},
-		fill: {
-			type: ['gradient', 'solid'],
-			gradient: {
-				shade: 'dark',
-				opacityFrom: 0.8,
-				opacityTo: 0.1,
-				stops: [0, 100],
-				type: 'vertical'
-			}
-		},
-		colors: ['#00E396', '#CC5500']
-	}
+		)
+	})
+
+	onDestroy(() => {
+		chart?.detach()
+	})
 
 	$: {
 		const daysAgo = presetToDaysAgo[datePreset]
 		const start = daysAgo ? subDays(startOfToday(), daysAgo) : undefined
-		options.xaxis.min = start?.getTime()
 
 		filteredDatasets = datasets.map((dataset: any) => {
 			return {
 				...dataset,
-				data: dataset.data.filter((point: any) =>
-					start ? point.x >= format(start, 'yyyy-MM-dd') : true
-				)
+				data: dataset.data.filter((point: any) => (start ? point.x >= start : true))
 			}
 		})
+
+		chart?.update({ series: filteredDatasets })
 	}
 
 	allTasksCache.subscribe((ts: Task[]) => {
@@ -152,7 +106,7 @@
 				runningTotal += groupedByDate[dtStr]
 			}
 			return {
-				x: dtStr,
+				x: date,
 				y: runningTotal
 			}
 		})
@@ -161,7 +115,7 @@
 			.getGoalTimeSeriesAccum()
 			.map((value) => {
 				return {
-					x: format(value.date, 'yyyy-MM-dd'),
+					x: value.date,
 					y: value.value
 				}
 			})
@@ -170,12 +124,12 @@
 			{
 				data: completedSeries,
 				name: 'Completed',
-				type: 'area'
+				className: 'chart-line-completed'
 			},
 			{
 				data: goalSeries,
 				name: 'Goal',
-				type: 'line'
+				className: 'chart-line-goal'
 			}
 		]
 	})
@@ -186,7 +140,28 @@
 	value={datePreset}
 	onChange={(value) => (datePreset = value)}
 />
-<ApexChart datasets={filteredDatasets} chartOptions={options} />
+<div id="chart" bind:this={chartEl} style="height:220px" />
 
 <style>
+	@import './chartist.css';
+	:global(.ct-line, .ct-point) {
+		stroke-width: 2px !important;
+	}
+	:global(.ct-label) {
+		color: rgba(140, 150, 150, 0.5) !important;
+	}
+	:global(.chart-line-goal) {
+		stroke: #cc5500;
+	}
+	:global(.chart-line-completed) {
+		stroke: #00e396;
+	}
+	:global(.chart-line-completed .ct-area) {
+		fill: #00a36c;
+	}
+	:global(.ct-grid) {
+		stroke: rgba(140, 150, 150, 0.8);
+		opacity: 0.2;
+		stroke-dasharray: none;
+	}
 </style>
