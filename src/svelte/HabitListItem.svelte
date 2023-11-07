@@ -2,6 +2,9 @@
 	import type TaskrPlugin from '../main'
 	import type { Habit } from 'src/habit'
 	import Icon from './Icon.svelte'
+	import type { RRule } from 'rrule'
+	import { type WorkspaceLeaf, MarkdownView } from 'obsidian'
+	import { TaskListView } from '../components/taskListView'
 
 	export let habit: Habit
 	export let plugin: TaskrPlugin
@@ -15,6 +18,39 @@
 		plugin.fileInterface.createUpdateHabit(habit)
 	}
 
+	const formatRRule = (rule: RRule) => {
+		const temp = rule.clone()
+		temp.options.until = null
+		temp.options.count = null
+		return temp.toText()
+	}
+
+	function navigateToHabit() {
+		const file = plugin.fileInterface.getHabitFileById(habit.id)
+		let existingLeaf: WorkspaceLeaf | undefined = undefined
+
+		const lv = app.workspace.getActiveViewOfType(TaskListView)
+		if (lv) existingLeaf = lv?.leaf
+
+		if (!existingLeaf) {
+			const lv = app.workspace.getActiveViewOfType(MarkdownView)
+			if (lv) existingLeaf = lv?.leaf
+		}
+
+		if (existingLeaf !== undefined) {
+			//@ts-ignore
+			existingLeaf.openFile(file)
+			return
+		}
+		let leaf = plugin.app.workspace.getLeaf(false)
+		leaf.openFile(file)
+	}
+
+	const onClickContainer = (evt: MouseEvent) => {
+		evt.stopPropagation()
+		evt.preventDefault()
+	}
+
 	$: {
 		quantityCompleted = habit.getCompletionsCurrentPeriod().length
 		percentComplete = quantityCompleted / (habit.quantity ?? 1)
@@ -22,18 +58,27 @@
 	}
 </script>
 
-<div style="border-radius:5px;width:100%;background-color:rgb(25,25,25);position:relative">
+<div
+	style="border-radius:5px;width:100%;background-color:rgb(25,25,25);position:relative"
+	on:contextmenu={onClickContainer}
+>
 	<div
 		style="display:flex;align-items:center;padding:7px 12px;column-gap:5px;justify-content: space-between;"
+		class="habit-container"
 	>
 		<div
-			style="display:flex;column-gap:15px;justify-content: space-between;align-items:center;"
+			style="display:flex;column-gap:15px;align-items:center;flex-grow:1"
+			on:click|stopPropagation={() => navigateToHabit()}
 		>
 			<Icon name="glass-water" color="lightblue" />
 			<div>
 				<div style="margin-bottom:3px">{habit.title}</div>
 				<div style="font-size:12px;color:rgb(150,150,150);">
-					<span>{quantityCompleted}/{habit.quantity}</span>
+					<span
+						>{quantityCompleted}/{habit.quantity} ({formatRRule(
+							habit.recurrence
+						)})</span
+					>
 					{#if streak > 1}
 						<span>&nbsp;&nbsp;•&nbsp;&nbsp;{`🔥 ${streak}`}</span>
 					{/if}
@@ -54,4 +99,8 @@
 </div>
 
 <style>
+	.habit-container:hover {
+		background-color: rgb(10, 10, 10);
+		cursor: pointer;
+	}
 </style>

@@ -20,6 +20,7 @@ import TasksReferencingThisPage from './svelte_pages/TasksReferencingThisPage.sv
 import { navigateToTaskPage, reloadCurrentPage } from './utils'
 import { format, parse } from 'date-fns'
 import type { Habit } from './habit'
+import { HabitModal } from './components/habitModal'
 
 export default class TaskrPlugin extends Plugin {
 	fileInterface: FileInterface
@@ -34,6 +35,10 @@ export default class TaskrPlugin extends Plugin {
 
 		this.addRibbonIcon('plus-square', 'New Task (TASKR)', () => {
 			new TaskModal(this.app, this).open()
+		})
+
+		this.addRibbonIcon('plus-square', 'New Habit (TASKR)', () => {
+			new HabitModal(this.app, this).open()
 		})
 
 		this.addRibbonIcon('search', 'Search Tasks (TASKR)', () => {

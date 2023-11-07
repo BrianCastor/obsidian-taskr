@@ -4,7 +4,7 @@ import { Project } from './project'
 import { Task } from './task'
 import { format, parse } from 'date-fns'
 import { Habit } from './habit'
-import { RRule } from 'rrule'
+import { rrulestr } from 'rrule'
 
 export class FileInterface {
 	plugin: TaskrPlugin
@@ -175,7 +175,7 @@ export class FileInterface {
 		return new Habit({
 			id: frontmatter.id,
 			title: frontmatter.title,
-			recurrence: RRule.fromString(frontmatter.recurrence),
+			recurrence: rrulestr(frontmatter.recurrence),
 			quantity: frontmatter.quantity,
 			effort: frontmatter.effort,
 			created_date:
@@ -193,6 +193,12 @@ export class FileInterface {
 		return this.plugin.app.vault
 			.getMarkdownFiles()
 			.filter((f: TFile) => f.parent?.name === this.plugin.settings.HabitsDir)
+	}
+
+	getHabitFileById = (id: string): TFile => {
+		const allHabitFiles = this.getAllHabitFiles()
+		const matches = allHabitFiles.filter((t: TFile) => t.basename === id)
+		return matches[0]
 	}
 
 	getAllHabits = async (): Promise<Habit[]> => {

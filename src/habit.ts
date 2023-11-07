@@ -1,4 +1,4 @@
-import { isAfter, isBefore } from 'date-fns'
+import { isAfter, isBefore, isEqual } from 'date-fns'
 import type { RRule } from 'rrule'
 
 export interface IHabitIn {
@@ -32,7 +32,6 @@ export class Habit {
 		this.created_date = data.created_date ?? new Date()
 		this.effort = data.effort ?? 0
 		this.project = data.project
-
 		this.completion_dates = data.completion_dates ?? []
 	}
 
@@ -46,11 +45,19 @@ export class Habit {
 		return result
 	}
 
-	getDueCurrentPeriod = (): number => {
+	getDueDates = () => {
 		const safeRecurrence = this.recurrence
 		// Safely limit the amount of recurrences for calculation
 		safeRecurrence.options.count = 200
-		const dueDates = safeRecurrence.all() ?? []
+		const dueDates = (safeRecurrence.all() ?? []).map((dt: Date) => {
+			return new Date(dt.getTime() + dt.getTimezoneOffset() * 60000)
+		})
+
+		return dueDates
+	}
+
+	getDueCurrentPeriod = (): number => {
+		const dueDates = this.getDueDates()
 		const currentPeriodEnd = dueDates.find((d) => d.getTime() > new Date().getTime())
 		if (currentPeriodEnd && dueDates.indexOf(currentPeriodEnd) > 0) {
 			return this.quantity
@@ -59,15 +66,14 @@ export class Habit {
 	}
 
 	getCompletionsCurrentPeriod = (): Date[] => {
-		const safeRecurrence = this.recurrence
-		// Safely limit the amount of recurrences for calculation
-		safeRecurrence.options.count = 200
-		const dueDates = safeRecurrence.all() ?? []
+		const dueDates = this.getDueDates()
 		const currentPeriodEnd = dueDates.find((d) => d.getTime() > new Date().getTime())
 		if (currentPeriodEnd && dueDates.indexOf(currentPeriodEnd) > 0) {
 			const currentPeriodStart = dueDates[dueDates.indexOf(currentPeriodEnd) - 1]
 			return (this.completion_dates ?? []).filter(
-				(d) => isBefore(d, currentPeriodEnd) && isAfter(d, currentPeriodStart)
+				(d) =>
+					isBefore(d, currentPeriodEnd) &&
+					(isAfter(d, currentPeriodStart) || isEqual(d, currentPeriodStart))
 			)
 		}
 		return []
@@ -78,10 +84,7 @@ export class Habit {
 	}
 
 	getStreak = () => {
-		const safeRecurrence = this.recurrence
-		// Safely limit the amount of recurrences for calculation
-		safeRecurrence.options.count = 200
-		const dueDates = safeRecurrence.all() ?? []
+		const dueDates = this.getDueDates()
 		let currentDueDate = dueDates.find((d) => d.getTime() > new Date().getTime())
 
 		let stop = false
@@ -93,8 +96,10 @@ export class Habit {
 				currentDueDate = dueDates[dueDates.indexOf(currentDueDate) - 1]
 				const prevDueDate = dueDates[dueDates.indexOf(currentDueDate) - 1]
 				const completions = (this.completion_dates ?? []).filter(
-					//@ts-expect-error
-					(d) => isBefore(d, currentDueDate) && isAfter(d, prevDueDate)
+					(d) =>
+						//@ts-expect-error
+						isBefore(d, currentDueDate) &&
+						(isAfter(d, prevDueDate) || isEqual(d, prevDueDate))
 				)
 				if (completions.length >= this.quantity) {
 					streak += 1
