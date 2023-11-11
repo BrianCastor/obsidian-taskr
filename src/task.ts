@@ -1,4 +1,4 @@
-import { startOfDay } from 'date-fns'
+import { isFuture, startOfDay } from 'date-fns'
 
 export interface ITask {
 	id?: string | undefined
@@ -44,13 +44,20 @@ export class Task implements ITask {
 	}
 
 	isOverdue() {
+		return this.isOverDueForDate(new Date())
+	}
+
+	isOverDueForDate(dt: Date) {
 		if (this.complete) {
 			return false
 		}
 		if (!this.scheduled_date) {
 			return false
 		}
-		return startOfDay(new Date()) > this.scheduled_date
+		if (isFuture(dt)) {
+			return false
+		}
+		return startOfDay(dt) > this.scheduled_date
 	}
 
 	filename() {

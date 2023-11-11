@@ -1,7 +1,8 @@
-import { MarkdownView, type WorkspaceLeaf } from 'obsidian'
+import { MarkdownView, View, type WorkspaceLeaf } from 'obsidian'
 import type { Task } from './task'
 import { TaskListView } from './components/taskListView'
 import type { DayOfWeek } from './types'
+import { HabitView } from './components/habitView'
 
 export const ALL_DAYS_OF_WEEK: DayOfWeek[] = [
 	'monday',
@@ -71,25 +72,26 @@ export const getEffort = (effort: number | undefined) => {
 	return allEfforts.find((option: any) => option.value === effort)
 }
 
-export const navigateToTaskPage = (pageType: string) => {
-	let existingLeaf: WorkspaceLeaf | undefined = undefined
+export const getLeaf = (): WorkspaceLeaf => {
+	let leaf: WorkspaceLeaf | undefined = undefined
 
-	const lv = app.workspace.getActiveViewOfType(TaskListView)
-	if (lv) existingLeaf = lv?.leaf
+	leaf = [TaskListView, MarkdownView, HabitView]
+		.map((view) => app.workspace.getActiveViewOfType<View>(view))
+		.find((view) => !!view)?.leaf
 
-	if (!existingLeaf) {
-		const lv = app.workspace.getActiveViewOfType(MarkdownView)
-		if (lv) existingLeaf = lv?.leaf
+	if (leaf === undefined) {
+		leaf = app.workspace.getLeaf(false)
 	}
+	return leaf
+}
 
-	if (existingLeaf === undefined) {
-		existingLeaf = app.workspace.getLeaf(false)
-	}
-	existingLeaf.setViewState({
+export const navigateToTaskPage = (pageType: string): void => {
+	const leaf = getLeaf()
+	leaf.setViewState({
 		type: pageType,
 		active: true
 	})
-	app.workspace.revealLeaf(existingLeaf)
+	app.workspace.revealLeaf(leaf)
 }
 
 export const reloadCurrentPage = () => {

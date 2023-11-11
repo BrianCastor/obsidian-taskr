@@ -56,27 +56,34 @@ export class Habit {
 		return dueDates
 	}
 
-	getDueCurrentPeriod = (): number => {
+	getDueAtPeriodForDate = (dt: Date): number => {
 		const dueDates = this.getDueDates()
-		const currentPeriodEnd = dueDates.find((d) => d.getTime() > new Date().getTime())
+		const currentPeriodEnd = dueDates.find((d) => d.getTime() > dt.getTime())
 		if (currentPeriodEnd && dueDates.indexOf(currentPeriodEnd) > 0) {
 			return this.quantity
 		}
 		return 0
 	}
 
-	getCompletionsCurrentPeriod = (): Date[] => {
+	getDueCurrentPeriod = (): number => {
+		return this.getDueAtPeriodForDate(new Date())
+	}
+
+	getCompletionsForPeriodOfDate = (dt: Date): Date[] => {
 		const dueDates = this.getDueDates()
-		const currentPeriodEnd = dueDates.find((d) => d.getTime() > new Date().getTime())
-		if (currentPeriodEnd && dueDates.indexOf(currentPeriodEnd) > 0) {
-			const currentPeriodStart = dueDates[dueDates.indexOf(currentPeriodEnd) - 1]
+		const periodEnd = dueDates.find((d) => d.getTime() > dt.getTime())
+		if (periodEnd && dueDates.indexOf(periodEnd) > 0) {
+			const periodStart = dueDates[dueDates.indexOf(periodEnd) - 1]
 			return (this.completion_dates ?? []).filter(
 				(d) =>
-					isBefore(d, currentPeriodEnd) &&
-					(isAfter(d, currentPeriodStart) || isEqual(d, currentPeriodStart))
+					isBefore(d, periodEnd) && (isAfter(d, periodStart) || isEqual(d, periodStart))
 			)
 		}
 		return []
+	}
+
+	getCompletionsCurrentPeriod = (): Date[] => {
+		return this.getCompletionsForPeriodOfDate(new Date())
 	}
 
 	isCompleteForPeriod = () => {

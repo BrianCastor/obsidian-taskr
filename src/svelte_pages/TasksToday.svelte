@@ -3,90 +3,185 @@
 	import { allHabitsCache, allTasksCache } from '../cache'
 	import type { Task } from '../task'
 	import Container from '../svelte/Container.svelte'
-	import { isToday } from 'date-fns'
+	import { isFuture, isPast, isSameDay, isToday } from 'date-fns'
 	import WeeklyProgressRing from '../svelte/WeeklyProgressRing.svelte'
 	import ProgressOnSchedule from '../svelte/ProgressOnSchedule.svelte'
 	import { sortTasksByDate } from '../utils'
-	import DayView from '../svelte/DayView.svelte'
 	import type { Habit } from 'src/habit'
 	import HabitListItem from '../svelte/HabitListItem.svelte'
+	import { onMount } from 'svelte'
+	import TaskListItem from '../svelte/TaskListItem.svelte'
+	import { GoalService } from '../goalService'
+	import Complete from '../assets/complete.svelte'
+	import Icon from '../svelte/Icon.svelte'
+	import NotFoundIllustration from '../assets/not-found-illustration.svelte'
+	import DateScroller from '../svelte/DateScroller.svelte'
 
 	export let plugin: TaskrPlugin
 	export let addBottomPadding: boolean = false
 
-	let sections: string[] = []
-	let groupings: Record<string, Task[]> = {}
+	let selectedDate = new Date()
 	let habits: Habit[] = []
+	let allHabits: Habit[] = []
+	let allTasks: Task[] = []
+	let tasks: Task[] = []
+	let showComplete = false
+	let showAddMore = false
+
+	let showCompletedTasks = false
 
 	allTasksCache.subscribe((ts: Task[]) => {
-		const tasks = ts.filter((task: Task) => {
+		allTasks = ts
+	})
+
+	$: {
+		showCompletedTasks = isPast(selectedDate) && !isToday(selectedDate)
+	}
+
+	$: {
+		const tempTasks = allTasks.filter((task: Task) => {
 			if (
-				task.isOverdue() ||
-				(task.completed_date && isToday(task.completed_date)) ||
-				(task.scheduled_date && isToday(task.scheduled_date)) ||
-				(task.due_date && isToday(task.due_date) && !task.scheduled_date)
+				task.isOverDueForDate(selectedDate) ||
+				(task.completed_date && isSameDay(selectedDate, task.completed_date)) ||
+				(task.scheduled_date && isSameDay(selectedDate, task.scheduled_date)) ||
+				(task.due_date && isSameDay(selectedDate, task.due_date) && !task.scheduled_date)
 			) {
 				return true
 			}
 			return false
 		})
+		tasks = sortTasksByDate(tempTasks.slice(), false)
+	}
 
-		groupings = sortTasksByDate(tasks.slice(), false).reduce((accum: any, task: Task) => {
-			let key
-			if (task.complete) key = 'Completed'
-			else if (task.isOverdue()) key = 'Overdue'
-			else if (task.scheduled_date) key = 'Scheduled'
-			else if (task.due_date) key = 'Due'
-			else key = 'Unscheduled'
-
-			accum[key] = (accum[key] || []).concat(task)
-			return accum
-		}, {})
-		sections = ['Overdue', 'Scheduled', 'Due', 'Unscheduled', 'Completed'].filter((s) =>
-			Object.keys(groupings).includes(s)
-		)
-
-		if (sections.includes('Completed')) {
-			groupings['Completed'] = sortTasksByDate(groupings['Completed'], true)
-		}
+	$: habits = allHabits.filter((h) => {
+		return h.getDueAtPeriodForDate(selectedDate) > 0
 	})
+	$: {
+		const dueToday = new GoalService(plugin.settings).getEffortDueAtDay(selectedDate)
+		const completedToday =
+			tasks
+				.filter((t) => t.complete)
+				.map((t) => t.effort)
+				.reduce((a, b) => {
+					return (a ?? 0) + (b ?? 0)
+				}, 0) ?? 0
+		showComplete = tasks.every((t) => t.complete) && completedToday >= dueToday * 60
+	}
+
+	$: {
+		const dueToday = new GoalService(plugin.settings).getEffortDueAtDay(selectedDate)
+		const scheduledOrCompletedToday =
+			tasks
+				.map((t) => t.effort)
+				.reduce((a, b) => {
+					return (a ?? 0) + (b ?? 0)
+				}, 0) ?? 0
+		showAddMore =
+			scheduledOrCompletedToday < dueToday * 60 &&
+			(isToday(selectedDate) || isFuture(selectedDate))
+	}
 
 	allHabitsCache.subscribe((hs: Habit[]) => {
-		habits = hs
-			.filter((h) => {
-				return h.getDueCurrentPeriod() > 0
-			})
-			.sort((a, b) => a.title.localeCompare(b.title))
+		allHabits = hs.sort((a, b) => a.title.localeCompare(b.title))
+	})
+
+	onMount(() => {
+		document.querySelector('.date-chip.today')?.scrollIntoView({
+			behavior: 'instant',
+			block: 'nearest',
+			inline: 'center'
+		})
 	})
 </script>
 
-<Container {addBottomPadding}>
-	<div style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll;margin-bottom:10px">
-		<WeeklyProgressRing {plugin} />
-		<ProgressOnSchedule {plugin} />
-	</div>
-
-	<!--{#if !["Overdue", "Scheduled", "Due"].some(s => sections.includes(s))}
-        <span>Day complete. Schedule more?</span>
-    {/if}-->
-
-	{#each sections as section}
-		<DayView {plugin} dayLabel={section} tasks={groupings[section]} />
-	{/each}
-
-	{#if sections.length === 0}
-		<em style="font-size:12px;color:grey;text-align:center">No tasks to display</em>
-	{/if}
-
-	<div style="margin-bottom:10px;margin-top:15px">Habits</div>
-	<div style="display:flex;flex-direction:column;row-gap:12px;">
-		{#each habits as habit}
-			<div>
-				<HabitListItem {habit} {plugin} />
+{#key selectedDate}
+	<div>
+		<Container {addBottomPadding}>
+			<div
+				style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll;margin-bottom:10px"
+			>
+				<ProgressOnSchedule {plugin} timePeriod="all-time" />
+				<WeeklyProgressRing {plugin} />
 			</div>
-		{/each}
-	</div>
-</Container>
 
-<style>
-</style>
+			<div style="margin-bottom:10px;">Tasks</div>
+			<div style="margin-left:10px;display:grid;grid-row-gap:12px;padding-bottom:8px;">
+				{#each tasks as task}
+					{#if !showCompletedTasks && !task.complete}
+						<TaskListItem {task} {plugin} />
+					{/if}
+					{#if showCompletedTasks && task.complete}
+						<TaskListItem {task} {plugin} />
+					{/if}
+				{/each}
+				{#if showAddMore}
+					<div style="display:flex;column-gap:15px;align-items:center">
+						<Icon name="alert-circle" color="orange" />
+						<div style="display:flex;flex-direction:column;row-gap:5px">
+							<div>Schedule more tasks to complete your daily goal.</div>
+							<div style="display:flex; column-gap:10px">
+								<button style="height:25px">Autoschedule</button>
+								<button style="height:25px">Find More</button>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</div>
+			{#if !showCompletedTasks}
+				{#if showComplete}
+					<div
+						style="width:100%;display:flex; align-items:center; row-gap:10px;flex-direction:column"
+					>
+						<Complete />
+						<div style="max-width:300px;font-size:13px;text-align:center">
+							All tasks complete and goal met -- time to relax!
+						</div>
+					</div>
+				{/if}
+			{/if}
+
+			{#if tasks.filter((t) => t.complete).length > 0 && !showCompletedTasks}
+				<div style="width:100%;display:flex; justify-content:center; margin-top:10px;">
+					<button style="height:30px" on:click={() => (showCompletedTasks = true)}
+						>Show Completed Tasks</button
+					>
+				</div>
+			{/if}
+			{#if showCompletedTasks && isToday(selectedDate)}
+				<div style="width:100%;display:flex;  justify-content:center; margin-top:10px;">
+					<button style="height:30px" on:click={() => (showCompletedTasks = false)}
+						>Show Scheduled Tasks</button
+					>
+				</div>
+			{/if}
+
+			{#if !tasks.length && !showAddMore && !showComplete}
+				<div
+					style="width:100%;max-width:100%;display:flex; align-items:center; row-gap:10px;flex-direction:column"
+				>
+					<NotFoundIllustration />
+					<div>No tasks found.</div>
+				</div>
+			{/if}
+
+			<div style="margin-bottom:10px;margin-top:15px">Habits</div>
+			<div style="display:flex;flex-direction:column;row-gap:12px;">
+				{#each habits as habit}
+					<HabitListItem {habit} {plugin} viewForDate={selectedDate} />
+				{/each}
+			</div>
+			{#if !habits.length}
+				<div
+					style="width:100%;max-width:100%;display:flex; align-items:center; row-gap:10px;flex-direction:column"
+				>
+					<NotFoundIllustration />
+					<div>No habits found.</div>
+				</div>
+			{/if}
+			<div style="height:50px;width:100%;" />
+		</Container>
+	</div>
+{/key}
+<DateScroller {selectedDate} onSelectDate={(dt) => (selectedDate = dt)} />
+
+<style></style>

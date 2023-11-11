@@ -138,7 +138,7 @@
 	style="width:100%;margin-top:5px;display:flex;justify-content:space-between; margin-bottom:4px"
 >
 	<div style="display:flex; alignItems:center; margin-top:5px;flex-wrap:wrap;row-gap:10px;">
-		<DateChip date={startDate} setDate={onSetSartDate} emoji={'DUE'} size="normal" />
+		<DateChip date={startDate} setDate={onSetSartDate} emoji={'STARTING'} size="normal" />
 		<FrequencyPicker frequency={freq} setFrequency={(f) => (freq = f)} />
 		<QuantityPicker {quantity} setQuantity={(q) => (quantity = q)} />
 		<LoeChip {effort} setEffort={(e) => (effort = e)} size="small" />

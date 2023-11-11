@@ -21,6 +21,7 @@ import { navigateToTaskPage, reloadCurrentPage } from './utils'
 import { format, parse } from 'date-fns'
 import type { Habit } from './habit'
 import { HabitModal } from './components/habitModal'
+import { HabitView } from './components/habitView'
 
 export default class TaskrPlugin extends Plugin {
 	fileInterface: FileInterface
@@ -139,6 +140,8 @@ export default class TaskrPlugin extends Plugin {
 				navigateToTaskPage(type)
 			})
 		})
+
+		this.registerView('habit-view', (leaf) => new HabitView(leaf, this, undefined))
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SettingsTab(this.app, this))

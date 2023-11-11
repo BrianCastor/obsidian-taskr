@@ -105,22 +105,13 @@
 	{#if showing}
 		<div style="margin-left:10px;display:grid;grid-row-gap:12px;padding-bottom:8px;">
 			{#each tasks as task (task.id)}
-				<div
-					style={!task.scheduled_date ? 'color:grey !important' : ''}
-					class="task-container"
-				>
-					<TaskListItem {task} {plugin} />
-				</div>
+				<TaskListItem {task} {plugin} />
 			{/each}
 		</div>
 	{/if}
 </div>
 
 <style>
-	.task-container {
-		white-space: normal;
-		list-style: none;
-	}
 	.headerUnscheduled {
 		color: grey !important;
 	}
