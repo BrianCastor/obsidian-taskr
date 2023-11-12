@@ -10,6 +10,7 @@
 		subDays
 	} from 'date-fns'
 	import { allTasksCache } from '../cache'
+	import { onMount } from 'svelte'
 
 	export let selectedDate: Date
 	export let onSelectDate: (dt: Date) => void
@@ -27,6 +28,18 @@
 			}
 			return accum
 		}, {})
+	})
+
+	onMount(() => {
+		setTimeout(
+			() =>
+				document.querySelector('.date-chip.today')?.scrollIntoView({
+					behavior: 'instant',
+					block: 'nearest',
+					inline: 'center'
+				}),
+			50
+		)
 	})
 </script>
 
@@ -119,6 +132,6 @@
 		display: none;
 	}
 	:global(.is-mobile .date-chip-container) {
-		bottom: 48px;
+		bottom: 90px !important;
 	}
 </style>

@@ -84,14 +84,6 @@
 	allHabitsCache.subscribe((hs: Habit[]) => {
 		allHabits = hs.sort((a, b) => a.title.localeCompare(b.title))
 	})
-
-	onMount(() => {
-		document.querySelector('.date-chip.today')?.scrollIntoView({
-			behavior: 'instant',
-			block: 'nearest',
-			inline: 'center'
-		})
-	})
 </script>
 
 {#key selectedDate}
