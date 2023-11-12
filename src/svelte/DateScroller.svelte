@@ -50,6 +50,13 @@
 				isSameDay(dt, selectedDate) && 'selected'
 			} ${isWeekend(dt) && 'weekend'}`}
 			on:click={() => onSelectDate(dt)}
+			on:dragstart={(e) => {
+				e.preventDefault()
+				e.stopPropagation()
+			}}
+			on:touchstart={(e) => {
+				e.stopPropagation()
+			}}
 		>
 			<div style="font-size:11px">{format(dt, 'EEE').toLocaleUpperCase()}</div>
 			<div
@@ -132,6 +139,6 @@
 		display: none;
 	}
 	:global(.is-mobile .date-chip-container) {
-		bottom: 90px !important;
+		bottom: 72px !important;
 	}
 </style>

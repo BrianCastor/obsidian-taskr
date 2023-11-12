@@ -185,7 +185,8 @@ export class FileInterface {
 			completion_dates: (frontmatter.completion_dates ?? '')
 				.split(',')
 				.filter((val: string) => val !== '')
-				.map((dt: string) => parse(dt, 'yyyy-MM-dd', new Date()))
+				.map((dt: string) => parse(dt, 'yyyy-MM-dd', new Date())),
+			icon: frontmatter.icon
 		})
 	}
 
@@ -228,7 +229,10 @@ export class FileInterface {
 			quantity: habit.quantity,
 			effort: habit.effort,
 			project: habit.project,
-			completion_dates: habit.completion_dates.map((dt) => format(dt, 'yyyy-MM-dd')).join(',')
+			completion_dates: habit.completion_dates
+				.map((dt) => format(dt, 'yyyy-MM-dd'))
+				.join(','),
+			icon: habit.icon
 		}
 
 		const existingFile = await this.app.vault.getAbstractFileByPath(fileName)

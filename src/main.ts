@@ -116,7 +116,7 @@ export default class TaskrPlugin extends Plugin {
 
 		const typesToLabels = {
 			[TASK_LIST_TYPES.today]: {
-				icon: `calendar-check-2`,
+				icon: `home`,
 				label: 'Today (TASKR)'
 			},
 			[TASK_LIST_TYPES.completed]: {

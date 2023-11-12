@@ -3,7 +3,7 @@
 	import { allHabitsCache, allTasksCache } from '../cache'
 	import type { Task } from '../task'
 	import Container from '../svelte/Container.svelte'
-	import { isFuture, isPast, isSameDay, isToday } from 'date-fns'
+	import { format, isFuture, isPast, isSameDay, isToday } from 'date-fns'
 	import WeeklyProgressRing from '../svelte/WeeklyProgressRing.svelte'
 	import ProgressOnSchedule from '../svelte/ProgressOnSchedule.svelte'
 	import { sortTasksByDate } from '../utils'
@@ -33,6 +33,12 @@
 	allTasksCache.subscribe((ts: Task[]) => {
 		allTasks = ts
 	})
+
+	$: {
+		// Edit page header
+		const header = document.querySelector('.mod-active .view-header-title')
+		if (header) header.innerHTML = format(selectedDate, 'EEEE, MMMM dd')
+	}
 
 	$: {
 		showCompletedTasks = isPast(selectedDate) && !isToday(selectedDate)
@@ -83,6 +89,13 @@
 
 	allHabitsCache.subscribe((hs: Habit[]) => {
 		allHabits = hs.sort((a, b) => a.title.localeCompare(b.title))
+	})
+
+	onMount(() => {
+		setTimeout(() => {
+			const header = document.querySelector('.mod-active .view-header-title')
+			if (header) header.innerHTML = format(selectedDate, 'EEEE, MMMM dd')
+		}, 50)
 	})
 </script>
 
@@ -164,7 +177,7 @@
 			</div>
 			{#if !habits.length}
 				<div
-					style="width:100%;max-width:100%;display:flex; align-items:center; row-gap:10px;flex-direction:column"
+					style="width:100%;max-width:100%;display:flex; align-items:center; row-gap:14px;flex-direction:column"
 				>
 					<NotFoundIllustration />
 					<div>No habits found.</div>

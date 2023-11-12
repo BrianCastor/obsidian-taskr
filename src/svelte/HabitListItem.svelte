@@ -13,6 +13,7 @@
 	let quantityCompleted = 0
 	let percentComplete = 0
 	let streak = 0
+	let habitHistory: ('complete' | 'partial' | 'none')[] = []
 
 	const completeHabit = () => {
 		habit.completion_dates.push(viewForDate)
@@ -53,58 +54,99 @@
 	}
 
 	$: {
-		quantityCompleted = habit.getCompletionsForPeriodOfDate(viewForDate).length
+		quantityCompleted = habit.getCompletionsForPeriodOfDate(viewForDate)
 		percentComplete = quantityCompleted / (habit.quantity ?? 1)
 		streak = habit.getStreak()
+
+		const temp: ('complete' | 'partial' | 'none')[] = []
+		let amountLeft = 14
+		for (const completionAmount of habit.completionHistoryIterator(viewForDate)) {
+			if (completionAmount >= habit.quantity) temp.push('complete')
+			else if (completionAmount > 0) temp.push('partial')
+			else temp.push('none')
+
+			amountLeft -= 1
+
+			if (amountLeft === 0) break
+		}
+		habitHistory = temp.reverse()
 	}
 </script>
 
-<div
-	style="border-radius:5px;width:100%;background-color:rgb(25,25,25);position:relative"
-	on:contextmenu={onClickContainer}
->
-	<div
-		style="display:flex;align-items:center;padding:3px 7px;column-gap:5px;justify-content: space-between;"
-		class="habit-container"
-	>
+<div style="border-radius:5px;width:100;position:relative" on:contextmenu={onClickContainer}>
+	<div class="habit-container">
+		<div class="habit-progress-line-container">
+			<div
+				style={`height:${Math.min(percentComplete, 1) * 100}%;background-color:${
+					percentComplete >= 1 ? 'lightgreen' : 'lightblue'
+				};transition: all 0.1s ease-out;width:100%;border-radius:5px;`}
+			/>
+		</div>
 		<div
-			style="display:flex;column-gap:10px;align-items:center;flex-grow:1"
+			style="display:flex;column-gap:10px;align-items:center;flex-grow:1;padding-left:13px;"
 			on:click|stopPropagation={() => navigateToHabit()}
 		>
-			<Icon name="glass-water" color="lightblue" />
+			<Icon name={habit.icon} color="lightblue" />
 			<div>
 				<div style="margin-bottom:1px">{habit.title}</div>
-				<div style="font-size:12px;color:rgb(150,150,150);margin-bottom:2px;">
+				<div
+					style="font-size:12px;color:rgb(150,150,150);display:flex;column-gap:5px;align-items:center"
+				>
 					<span
 						>{quantityCompleted}/{habit.quantity} ({formatRRule(
 							habit.recurrence
 						)})</span
 					>
+					<span>•</span>
+					<div style="display:flex;">
+						{#each habitHistory as hh}
+							<div
+								style={`background-color:${
+									hh === 'complete'
+										? 'lightgreen'
+										: hh === 'partial'
+										? 'yellow'
+										: 'rgb(100,100,100)'
+								};height:10px;width:3px;opacity:.8`}
+							/>
+						{/each}
+					</div>
 					{#if streak > 1}
-						<span>&nbsp;&nbsp;•&nbsp;&nbsp;{`🔥 ${streak}`}</span>
+						<span>•</span>
+						<span>{`🔥 ${streak}`}</span>
 					{/if}
 				</div>
 			</div>
 		</div>
 		<div>
-			{#if quantityCompleted}<button on:click={() => uncompleteHabit()} style="height:35px"
+			{#if quantityCompleted}<button on:click={() => uncompleteHabit()} style="height:30px"
 					>-</button
 				>{/if}
-			<button on:click={() => completeHabit()} style="height:35px">+</button>
+			<button on:click={() => completeHabit()} style="height:30px">+</button>
 		</div>
-	</div>
-	<div style="height:3px;background-color:rgb(50,50,50);border-radius:0px 0px 5px 5px;width:100%">
-		<div
-			style={`width:${Math.min(percentComplete, 1) * 100}%;height:100%;background-color:${
-				percentComplete >= 1 ? 'lightgreen' : 'lightblue'
-			};border-radius:0px 20px 20px 5px;transition: all 0.1s ease-out;`}
-		/>
 	</div>
 </div>
 
 <style>
-	.habit-container:hover {
-		background-color: rgb(10, 10, 10);
+	.habit-container {
+		display: flex;
+		align-items: center;
+		column-gap: 5px;
+		justify-content: space-between;
+		position: relative;
 		cursor: pointer;
+	}
+
+	.habit-progress-line-container {
+		width: 3px;
+		background-color: rgb(50, 50, 50);
+		border-radius: 5px;
+		height: 100%;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		position: absolute;
+		display: flex;
+		align-items: end;
 	}
 </style>

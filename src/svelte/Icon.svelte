@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getIcon, type IconName } from 'obsidian'
-	export let name: IconName
+	import type { LucideIcon } from '../types/lucide'
+	export let name: LucideIcon
 	export let color: string | undefined = 'inherit'
 
 	let iconHTML: string

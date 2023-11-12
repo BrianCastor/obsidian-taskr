@@ -1,5 +1,6 @@
 import { isAfter, isBefore, isEqual } from 'date-fns'
 import type { RRule } from 'rrule'
+import type { LucideIcon } from './types/lucide'
 
 export interface IHabitIn {
 	id?: string
@@ -10,6 +11,7 @@ export interface IHabitIn {
 	effort: number
 	project?: string
 	completion_dates?: Date[]
+	icon?: LucideIcon
 }
 
 export class Habit {
@@ -20,9 +22,10 @@ export class Habit {
 	created_date: Date
 	effort: number
 	project: string | undefined
+	icon: LucideIcon
 
 	// Track from Task completions or track internal completions?
-	completion_dates: Date[]
+	completion_dates: Date[] = []
 
 	constructor(data: IHabitIn) {
 		this.id = data.id ?? this.createId()
@@ -33,6 +36,7 @@ export class Habit {
 		this.effort = data.effort ?? 0
 		this.project = data.project
 		this.completion_dates = data.completion_dates ?? []
+		this.icon = data.icon ?? 'activity'
 	}
 
 	createId() {
@@ -45,7 +49,8 @@ export class Habit {
 		return result
 	}
 
-	getDueDates = () => {
+	getDueDates = (): Date[] => {
+		// TODO - replace with generator
 		const safeRecurrence = this.recurrence
 		// Safely limit the amount of recurrences for calculation
 		safeRecurrence.options.count = 200
@@ -57,67 +62,60 @@ export class Habit {
 	}
 
 	getDueAtPeriodForDate = (dt: Date): number => {
-		const dueDates = this.getDueDates()
-		const currentPeriodEnd = dueDates.find((d) => d.getTime() > dt.getTime())
-		if (currentPeriodEnd && dueDates.indexOf(currentPeriodEnd) > 0) {
-			return this.quantity
+		const currentPeriod = this.habitPeriodIterator(dt).next()
+		return currentPeriod.value ? this.quantity : 0
+	}
+
+	getCompletionsForPeriodOfDate = (dt: Date): number => {
+		return this.completionHistoryIterator(dt).next().value ?? 0
+	}
+
+	habitPeriodIterator = function* (endDate: Date): Generator<{ start: Date; end: Date }> {
+		// Returns the current period that the end date is in as well
+		let dueDates = this.getDueDates()
+		const firstPeriodEndDate = dueDates.find((d: Date) => d.getTime() > endDate.getTime())
+
+		dueDates = dueDates
+			.filter((d: Date) => isBefore(d, firstPeriodEndDate) || isEqual(d, firstPeriodEndDate))
+			.reverse()
+
+		for (const periodEnd of dueDates) {
+			const periodStart = dueDates[dueDates.indexOf(periodEnd) + 1]
+			if (!periodStart) return
+			yield { start: periodStart, end: periodEnd }
 		}
-		return 0
 	}
 
-	getDueCurrentPeriod = (): number => {
-		return this.getDueAtPeriodForDate(new Date())
-	}
-
-	getCompletionsForPeriodOfDate = (dt: Date): Date[] => {
-		const dueDates = this.getDueDates()
-		const periodEnd = dueDates.find((d) => d.getTime() > dt.getTime())
-		if (periodEnd && dueDates.indexOf(periodEnd) > 0) {
-			const periodStart = dueDates[dueDates.indexOf(periodEnd) - 1]
-			return (this.completion_dates ?? []).filter(
-				(d) =>
-					isBefore(d, periodEnd) && (isAfter(d, periodStart) || isEqual(d, periodStart))
+	completionHistoryIterator = function* (endDate: Date) {
+		// Returns the current period that the end date is in as well
+		for (const period of this.habitPeriodIterator(endDate)) {
+			const completionsInPeriod = (this.completion_dates ?? []).filter(
+				(d: Date) =>
+					isBefore(d, period.end) &&
+					(isAfter(d, period.start) || isEqual(d, period.start))
 			)
+			yield completionsInPeriod.length
 		}
-		return []
-	}
-
-	getCompletionsCurrentPeriod = (): Date[] => {
-		return this.getCompletionsForPeriodOfDate(new Date())
-	}
-
-	isCompleteForPeriod = () => {
-		return this.getCompletionsCurrentPeriod().length >= (this.quantity ?? 0)
 	}
 
 	getStreak = () => {
-		const dueDates = this.getDueDates()
-		let currentDueDate = dueDates.find((d) => d.getTime() > new Date().getTime())
-
-		let stop = false
 		let streak = 0
-		while (stop === false) {
-			if (!currentDueDate || dueDates.indexOf(currentDueDate) === 0) {
-				stop = true
-			} else {
-				currentDueDate = dueDates[dueDates.indexOf(currentDueDate) - 1]
-				const prevDueDate = dueDates[dueDates.indexOf(currentDueDate) - 1]
-				const completions = (this.completion_dates ?? []).filter(
-					(d) =>
-						//@ts-expect-error
-						isBefore(d, currentDueDate) &&
-						(isAfter(d, prevDueDate) || isEqual(d, prevDueDate))
-				)
-				if (completions.length >= this.quantity) {
-					streak += 1
-				} else {
-					stop = true
-				}
+		let skip = true
+		for (const completionAmount of this.completionHistoryIterator(new Date())) {
+			// Skip current period for calculating streak run
+			if (skip) {
+				skip = false
+				continue
 			}
+
+			if (completionAmount < this.quantity) {
+				break
+			}
+			streak += 1
 		}
 
 		//Check current time period, add 1 if its been completed
-		if (this.getCompletionsCurrentPeriod().length >= this.quantity) {
+		if (this.getCompletionsForPeriodOfDate(new Date()) >= this.quantity) {
 			streak += 1
 		}
 

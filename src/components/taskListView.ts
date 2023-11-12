@@ -30,8 +30,7 @@ export class TaskListView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		if (this.type === TASK_LIST_TYPES.today)
-			return `Tasks - ${format(new Date(), 'EEEE, MMM d')}`
+		if (this.type === TASK_LIST_TYPES.today) return `TASKR Homepage`
 		if (this.type === TASK_LIST_TYPES.completed) return `Completed Tasks`
 		if (this.type === TASK_LIST_TYPES.thisWeek)
 			return `Tasks this Week (${format(
@@ -43,7 +42,7 @@ export class TaskListView extends ItemView {
 	}
 
 	getIcon(): string {
-		if (this.type === TASK_LIST_TYPES.today) return `calendar-check-2`
+		if (this.type === TASK_LIST_TYPES.today) return `home`
 		if (this.type === TASK_LIST_TYPES.completed) return `medal`
 		if (this.type === TASK_LIST_TYPES.thisWeek) return `calendar-clock`
 		if (this.type === TASK_LIST_TYPES.incomplete) return `list`
