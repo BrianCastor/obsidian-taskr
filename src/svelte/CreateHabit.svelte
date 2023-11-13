@@ -10,6 +10,8 @@
 	import { Frequency, RRule } from 'rrule'
 	import FrequencyPicker from './FrequencyPicker.svelte'
 	import QuantityPicker from './QuantityPicker.svelte'
+	import IconPicker from './IconPicker.svelte'
+	import type { LucideIcon } from '../types/lucide'
 
 	export let close: () => void
 	export let store: (habit: Habit) => void
@@ -23,6 +25,7 @@
 	let title: string = ''
 	let effort: number | undefined
 	let project: string | undefined
+	let icon: LucideIcon | undefined
 	let recurrence: RRule | undefined
 	let freq: Frequency = Frequency.DAILY
 	let quantity: number = 1
@@ -50,7 +53,8 @@
 			}),
 			project: project,
 			effort: effort ?? 0,
-			quantity: quantity
+			quantity: quantity,
+			icon: icon ?? 'activity'
 		})
 		store(newHabit)
 		close()
@@ -128,7 +132,7 @@
 	<div
 		contenteditable="true"
 		bind:innerHTML={inputHTML}
-		class="task-input"
+		class="habit-input"
 		bind:this={inputEl}
 		on:keypress={handleKeyPress}
 	/>
@@ -139,10 +143,11 @@
 >
 	<div style="display:flex; alignItems:center; margin-top:5px;flex-wrap:wrap;row-gap:10px;">
 		<DateChip date={startDate} setDate={onSetSartDate} emoji={'STARTING'} size="normal" />
-		<FrequencyPicker frequency={freq} setFrequency={(f) => (freq = f)} />
 		<QuantityPicker {quantity} setQuantity={(q) => (quantity = q)} />
+		<FrequencyPicker frequency={freq} setFrequency={(f) => (freq = f)} />
 		<LoeChip {effort} setEffort={(e) => (effort = e)} size="small" />
 		<ProjectSelector {project} setProject={onSetProject} size="small" />
+		<IconPicker {icon} setIcon={(iconName) => (icon = iconName)} size="small" />
 	</div>
 </div>
 
@@ -151,15 +156,7 @@
 </div>
 
 <style>
-	.copy-task {
-		font-size: 12px;
-		display: flex;
-		justify-content: space-between;
-		cursor: pointer;
-		padding: 12px;
-		border-top: 1px solid rgb(30, 30, 30);
-	}
-	.task-input {
+	.habit-input {
 		width: 100%;
 		border: 1px solid rgb(54, 54, 54);
 		background-color: rgba(1, 1, 1, 0.2);

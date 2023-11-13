@@ -3,7 +3,6 @@
 	import { allTasksCache } from '../cache'
 	import type { Task } from 'src/task'
 	import type TaskrPlugin from '../main'
-	import ButtonGroup from './ButtonGroup.svelte'
 	import { GoalService } from '../goalService'
 	import { onDestroy, onMount } from 'svelte'
 	import { FixedScaleAxis, LineChart, type SeriesObject } from 'chartist'
@@ -12,17 +11,8 @@
 
 	let datasets: SeriesObject[] = []
 	let filteredDatasets: SeriesObject[] = []
-	let datePreset: string = 'All'
 	let chart: LineChart | undefined
 	let chartEl: HTMLElement
-
-	const presetToDaysAgo: Record<string, number | undefined> = {
-		W: 7,
-		M: 31,
-		'6M': 182,
-		Y: 365,
-		All: undefined
-	}
 
 	onMount(() => {
 		chart = new LineChart(
@@ -33,21 +23,17 @@
 			{
 				axisX: {
 					type: FixedScaleAxis,
-					divisor: 5,
-					labelInterpolationFnc: (value) =>
-						new Date(value).toLocaleString(undefined, {
-							month: 'short',
-							year: '2-digit'
-						}),
-					showGrid: false
+					showGrid: false,
+					showLabel: false
 				},
 				axisY: {
-					showGrid: true,
-					showLabel: true,
-					position: 'end'
+					showLabel: false,
+					position: 'end',
+					showGrid: true
 				},
-				height: 220,
-				showArea: true
+				chartPadding: { right: -40, left: 0, top: 0, bottom: -30 },
+				fullWidth: true,
+				lineSmooth: true
 			}
 		)
 	})
@@ -57,8 +43,7 @@
 	})
 
 	$: {
-		const daysAgo = presetToDaysAgo[datePreset]
-		const start = daysAgo ? subDays(startOfToday(), daysAgo) : undefined
+		const start = subDays(startOfToday(), 14)
 
 		filteredDatasets = datasets.map((dataset: any) => {
 			return {
@@ -122,44 +107,33 @@
 
 		datasets = [
 			{
-				data: completedSeries,
-				name: 'Completed',
-				className: 'chart-line-completed'
-			},
-			{
 				data: goalSeries,
 				name: 'Goal',
 				className: 'chart-line-goal'
+			},
+			{
+				data: completedSeries,
+				name: 'Completed',
+				className: 'chart-line-completed'
 			}
 		]
 	})
 </script>
 
-<ButtonGroup
-	options={Object.keys(presetToDaysAgo)}
-	value={datePreset}
-	onChange={(value) => (datePreset = value)}
-/>
-<div id="chart" bind:this={chartEl} style="height:220px" />
+<div id="sparkline-chart" bind:this={chartEl} style="height:100%;width:100%" />
 
 <style>
 	@import './chartist.css';
-	:global(#chart .ct-line, #chart .ct-point) {
-		stroke-width: 2px !important;
+	:global(#sparkline-chart .ct-line, #sparkline-chart .ct-point) {
+		stroke-width: 4px !important;
 	}
-	:global(#chart .ct-label) {
-		color: rgba(140, 150, 150, 0.5) !important;
-	}
-	:global(#chart .chart-line-goal) {
+	:global(#sparkline-chart .chart-line-goal) {
 		stroke: #cc5500;
 	}
-	:global(#chart .chart-line-completed) {
+	:global(#sparkline-chart .chart-line-completed) {
 		stroke: #00e396;
 	}
-	:global(#chart .chart-line-completed .ct-area) {
-		fill: #00a36c;
-	}
-	:global(#chart .ct-grid) {
+	:global(#sparkline-chart .ct-grid) {
 		stroke: rgba(140, 150, 150, 0.8);
 		opacity: 0.2;
 		stroke-dasharray: none;

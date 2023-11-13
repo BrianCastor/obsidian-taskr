@@ -11,9 +11,16 @@
 	}
 </script>
 
-<div style={`color:${color}`}>
+<div class="svelte-lucide-icon" style={`color:${color}`}>
 	{@html iconHTML}
 </div>
 
 <style>
+	.svelte-lucide-icon {
+		height: 100%;
+		max-height: 100%;
+	}
+	:global(.svelte-lucide-icon .svg-icon) {
+		height: 100% !important;
+	}
 </style>

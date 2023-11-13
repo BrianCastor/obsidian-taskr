@@ -67,17 +67,10 @@ export default class TaskrPlugin extends Plugin {
 		// Modify Mobile Buttons
 		const b2 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
 		if (b2) {
-			b2.innerHTML = ''
-			const bn = new ButtonComponent(b2)
-			bn.setIcon('medal')
-			bn.setClass('clickable-icon')
-			bn.setClass('mod-tappable')
-			bn.onClick((e: MouseEvent) => {
-				navigateToTaskPage(TASK_LIST_TYPES.completed)
-			})
+			b2.remove()
 		}
 
-		const b4 = document.getElementsByClassName('mobile-navbar-action')[1] as HTMLElement
+		const b4 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
 		if (b4) {
 			b4.innerHTML = ''
 			const bz = new ButtonComponent(b4)
@@ -89,7 +82,7 @@ export default class TaskrPlugin extends Plugin {
 			})
 		}
 
-		const b1 = document.getElementsByClassName('mobile-navbar-action')[3] as HTMLElement
+		const b1 = document.getElementsByClassName('mobile-navbar-action')[2] as HTMLElement
 		if (b1) {
 			const newElem = document.createElement('div')
 			b1.replaceWith(newElem)
@@ -101,7 +94,7 @@ export default class TaskrPlugin extends Plugin {
 				navigateToTaskPage(TASK_LIST_TYPES.incomplete)
 			})
 		}
-		const bn = document.getElementsByClassName('mobile-navbar-action')[2] as HTMLElement
+		const bn = document.getElementsByClassName('mobile-navbar-action')[1] as HTMLElement
 		if (bn) {
 			const newElem = document.createElement('div')
 			bn.after(newElem)

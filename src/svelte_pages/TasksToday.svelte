@@ -4,9 +4,8 @@
 	import type { Task } from '../task'
 	import Container from '../svelte/Container.svelte'
 	import { format, isFuture, isPast, isSameDay, isToday } from 'date-fns'
-	import WeeklyProgressRing from '../svelte/WeeklyProgressRing.svelte'
 	import ProgressOnSchedule from '../svelte/ProgressOnSchedule.svelte'
-	import { sortTasksByDate } from '../utils'
+	import { navigateToTaskPage, sortTasksByDate } from '../utils'
 	import type { Habit } from 'src/habit'
 	import HabitListItem from '../svelte/HabitListItem.svelte'
 	import { onMount } from 'svelte'
@@ -16,6 +15,11 @@
 	import Icon from '../svelte/Icon.svelte'
 	import NotFoundIllustration from '../assets/not-found-illustration.svelte'
 	import DateScroller from '../svelte/DateScroller.svelte'
+	import CompletionSparklineChart from '../svelte/CompletionSparklineChart.svelte'
+	import WeeklyProgressBar from '../svelte/WeeklyProgressBar.svelte'
+	import DailyProgressBar from '../svelte/DailyProgressBar.svelte'
+	import DaysToRelaxStat from '../svelte/DaysToRelaxStat.svelte'
+	import { TASK_LIST_TYPES } from '../components/taskListView'
 
 	export let plugin: TaskrPlugin
 	export let addBottomPadding: boolean = false
@@ -95,18 +99,35 @@
 		setTimeout(() => {
 			const header = document.querySelector('.mod-active .view-header-title')
 			if (header) header.innerHTML = format(selectedDate, 'EEEE, MMMM dd')
-		}, 50)
+		}, 5)
 	})
 </script>
 
 {#key selectedDate}
 	<div>
 		<Container {addBottomPadding}>
-			<div
-				style="display:flex;column-gap:10px; row-gap:10px;overflow-x:scroll;margin-bottom:10px"
-			>
-				<ProgressOnSchedule {plugin} timePeriod="all-time" />
-				<WeeklyProgressRing {plugin} />
+			<div style="display:flex;column-gap:20px;row-gap:10px;margin-bottom:10px;">
+				<div style="display:flex; flex-direction:column; max-width:120px;width:120px">
+					<div
+						style="height:90px;width:120px;overflow:none;cursor:pointer"
+						on:click={() => navigateToTaskPage(TASK_LIST_TYPES.completed)}
+					>
+						<CompletionSparklineChart {plugin} />
+					</div>
+				</div>
+				<div
+					style="flex-grow:1;max-width:300px;display:flex;flex-direction:column;row-gap:10px;"
+				>
+					<DailyProgressBar {plugin} />
+					<WeeklyProgressBar {plugin} />
+
+					<div
+						style="display:flex;column-gap:10px;row-gap:10px;justify-content:space-evenly"
+					>
+						<ProgressOnSchedule {plugin} displayAs="statistic" timePeriod="all-time" />
+						<DaysToRelaxStat {plugin} />
+					</div>
+				</div>
 			</div>
 
 			<div style="margin-bottom:10px;">Tasks</div>

@@ -1,23 +1,18 @@
 <script lang="ts">
+	import { LUCIDE_ICONS, type LucideIcon } from '../types/lucide'
 	import { showDropdownMenu } from '../components/DropdownMenu'
+	import Icon from './Icon.svelte'
 
-	export let quantity: number | undefined
-	export let setQuantity: (quantity: number) => void
+	export let icon: LucideIcon | undefined
+	export let setIcon: (icon: LucideIcon) => void
 	export let size: 'small' | 'large' = 'small'
 
-	const formatQuantity = (quantity: number | undefined): string => {
-		if (quantity === 1) return 'Once'
-		if (quantity === 2) return 'Twice'
-		if (quantity == undefined) return '-'
-		return `${quantity.toString()} time${quantity !== 1 ? 's' : ''}`
-	}
-
 	let container: HTMLDivElement
-	let options = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((opt: number) => {
+	let options = LUCIDE_ICONS.map((icon: LucideIcon) => {
 		return {
-			label: formatQuantity(opt),
-			value: opt,
-			onClick: () => setQuantity(opt)
+			label: icon,
+			value: icon,
+			onClick: () => setIcon(icon)
 		}
 	})
 </script>
@@ -28,9 +23,8 @@
 	bind:this={container}
 	on:click|stopPropagation={() => showDropdownMenu(options, container)}
 >
-	<div style="font-weight:bold;">
-		{formatQuantity(quantity)}
-	</div>
+	<em style="margin-right:8px; color:grey;">ICON</em>
+	<div style="max-height:12px;height:12px;"><Icon name={icon ?? 'activity'} /></div>
 </div>
 
 <style>

@@ -4,7 +4,7 @@
 	import Icon from './Icon.svelte'
 	import type { RRule } from 'rrule'
 	import { getLeaf } from '../utils'
-	import { isSameDay } from 'date-fns'
+	import { isSameDay, isToday } from 'date-fns'
 
 	export let habit: Habit
 	export let plugin: TaskrPlugin
@@ -90,30 +90,28 @@
 			<div>
 				<div style="margin-bottom:1px">{habit.title}</div>
 				<div
-					style="font-size:12px;color:rgb(150,150,150);display:flex;column-gap:5px;align-items:center"
+					style="font-size:12px;color:rgb(150,150,150);display:flex;column-gap:10px;align-items:center"
 				>
-					<span
-						>{quantityCompleted}/{habit.quantity} ({formatRRule(
-							habit.recurrence
-						)})</span
-					>
-					<span>•</span>
-					<div style="display:flex;">
-						{#each habitHistory as hh}
-							<div
-								style={`background-color:${
-									hh === 'complete'
-										? 'lightgreen'
-										: hh === 'partial'
-										? 'yellow'
-										: 'rgb(100,100,100)'
-								};height:10px;width:3px;opacity:.8`}
-							/>
-						{/each}
+					<div style="min-width:95px;">
+						{quantityCompleted}/{habit.quantity} ({formatRRule(habit.recurrence)})
 					</div>
-					{#if streak > 1}
-						<span>•</span>
-						<span>{`🔥 ${streak}`}</span>
+					{#if isToday(viewForDate)}
+						<div style="display:flex;min-width:50px;justify-content:end;">
+							{#each habitHistory as hh}
+								<div
+									style={`background-color:${
+										hh === 'complete'
+											? 'lightgreen'
+											: hh === 'partial'
+											? 'yellow'
+											: 'rgb(80,80,80)'
+									};height:10px;width:3px;opacity:.8`}
+								/>
+							{/each}
+						</div>
+						{#if streak > 1}
+							<span>{`🔥 ${streak}`}</span>
+						{/if}
 					{/if}
 				</div>
 			</div>

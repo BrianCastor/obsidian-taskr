@@ -130,20 +130,27 @@ export class GoalService {
 		return hoursCompleted / totalWorkDays
 	}
 
-	projectRelaxUntil = (tasks: Task[]): Date | undefined => {
+	getDaysToRelax = (tasks: Task[]): number => {
 		// We've completed more tasks than our goal - project how many days of inaction can happen before total hours completed falls below (rising) goal
 		const completedVSGoalDiff = this.getTotalHoursCompleted(tasks) - this.hoursToCompleteTotal()
 
-		if (completedVSGoalDiff < 0) return undefined // We haven't completed more tasks than goal, so can't relax
+		if (completedVSGoalDiff < 0) return 0 // We haven't completed more tasks than goal, so can't relax
 
-		let relaxDaysLeft = completedVSGoalDiff / this.dailyIncrement
+		return completedVSGoalDiff / this.dailyIncrement
+	}
+
+	projectRelaxUntil = (tasks: Task[]): Date | undefined => {
+		// We've completed more tasks than our goal - project how many days of inaction can happen before total hours completed falls below (rising) goal
+		let daysToRelax = this.getDaysToRelax(tasks)
+
+		if (daysToRelax < 0) return undefined // We haven't completed more tasks than goal, so can't relax
 
 		// Starting at tomorrow, iterate through upcoming days
 		let relaxUntilDate = startOfDay(new Date())
-		while (relaxDaysLeft >= 0) {
+		while (daysToRelax >= 0) {
 			relaxUntilDate = addDays(relaxUntilDate, 1)
 			if (!this.isDayOff(relaxUntilDate)) {
-				relaxDaysLeft -= 1
+				daysToRelax -= 1
 			}
 		}
 
@@ -172,10 +179,6 @@ export class GoalService {
 			}
 			return breakEvenDate
 		}
-	}
-
-	getDaysToRelax = (surplus: number) => {
-		return Math.floor(surplus / this.dailyIncrement)
 	}
 
 	getTotalHoursCompleted = (tasks: Task[]) => {

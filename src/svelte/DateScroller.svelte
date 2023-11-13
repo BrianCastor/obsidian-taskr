@@ -38,7 +38,7 @@
 					block: 'nearest',
 					inline: 'center'
 				}),
-			50
+			5
 		)
 	})
 </script>
