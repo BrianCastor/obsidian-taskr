@@ -143,7 +143,7 @@ export class GoalService {
 		// We've completed more tasks than our goal - project how many days of inaction can happen before total hours completed falls below (rising) goal
 		let daysToRelax = this.getDaysToRelax(tasks)
 
-		if (daysToRelax < 0) return undefined // We haven't completed more tasks than goal, so can't relax
+		if (daysToRelax <= 0) return undefined // We haven't completed more tasks than goal, so can't relax
 
 		// Starting at tomorrow, iterate through upcoming days
 		let relaxUntilDate = startOfDay(new Date())
