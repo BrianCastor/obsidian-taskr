@@ -107,11 +107,11 @@
 	<div>
 		<Container {addBottomPadding}>
 			<div
-				style="display:flex;column-gap:20px;row-gap:10px;margin-bottom:20px;justify-content:center"
+				style="display:flex;column-gap:15px;row-gap:10px;margin-bottom:20px;justify-content:center"
 			>
-				<div style="display:flex; flex-direction:column; max-width:120px;width:120px">
+				<div style="display:flex; flex-direction:column; max-width:100px;width:100px">
 					<div
-						style="height:90px;width:120px;overflow:none;cursor:pointer"
+						style="height:90px;width:100px;overflow:none;cursor:pointer"
 						on:click={() => navigateToTaskPage(TASK_LIST_TYPES.completed)}
 					>
 						<CompletionSparklineChart {plugin} />

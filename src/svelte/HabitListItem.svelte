@@ -69,6 +69,9 @@
 
 			if (amountLeft === 0) break
 		}
+		if (temp.length < 14) {
+			temp.push(...new Array(14 - temp.length).fill('none'))
+		}
 		habitHistory = temp.reverse()
 	}
 </script>

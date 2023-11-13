@@ -14,8 +14,6 @@
 		const relaxUntilDate = gs.projectRelaxUntil(tasks)
 		daysToRelax = differenceInDays(relaxUntilDate ?? new Date(), new Date())
 	})
-
-	const color = 'cyan'
 </script>
 
 <div style="text-align:center;">
