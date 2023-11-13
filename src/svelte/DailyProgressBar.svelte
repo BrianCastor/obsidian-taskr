@@ -35,7 +35,8 @@
 	>
 		<div>Today</div>
 		<div>
-			{Math.round(hoursCompletedToday * 10) / 10}/{hoursToCompleteToday} HR
+			{Math.round(hoursCompletedToday * 10) / 10}/{Math.round(hoursToCompleteToday * 10) / 10}
+			HR
 		</div>
 	</div>
 	<div class="progress-bar-a-container">
