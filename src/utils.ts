@@ -3,6 +3,7 @@ import type { Task } from './task'
 import { TaskListView } from './components/taskListView'
 import type { DayOfWeek } from './types'
 import { HabitView } from './components/habitView'
+import { activeViewTypeCache } from './cache'
 
 export const ALL_DAYS_OF_WEEK: DayOfWeek[] = [
 	'monday',
@@ -91,6 +92,7 @@ export const navigateToTaskPage = (pageType: string): void => {
 		type: pageType,
 		active: true
 	})
+	activeViewTypeCache.set(pageType)
 	app.workspace.revealLeaf(leaf)
 }
 

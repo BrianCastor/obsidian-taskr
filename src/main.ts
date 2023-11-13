@@ -1,10 +1,4 @@
-import {
-	Plugin,
-	TAbstractFile,
-	TFile,
-	type MarkdownPostProcessorContext,
-	ButtonComponent
-} from 'obsidian'
+import { Plugin, TAbstractFile, TFile, type MarkdownPostProcessorContext } from 'obsidian'
 import { allHabitsCache, allProjectsCache, allTasksCache } from './cache'
 import { TaskListView, TASK_LIST_TYPES } from './components/taskListView'
 import { TaskModal } from './components/taskModal'
@@ -22,6 +16,7 @@ import { format, parse } from 'date-fns'
 import type { Habit } from './habit'
 import { HabitModal } from './components/habitModal'
 import { HabitView } from './components/habitView'
+import MobileNavBar from './svelte/MobileNavBar.svelte'
 
 export default class TaskrPlugin extends Plugin {
 	fileInterface: FileInterface
@@ -64,46 +59,13 @@ export default class TaskrPlugin extends Plugin {
 			}
 		})
 
-		// Modify Mobile Buttons
-		const b2 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
-		if (b2) {
-			b2.remove()
-		}
-
-		const b4 = document.getElementsByClassName('mobile-navbar-action')[0] as HTMLElement
-		if (b4) {
-			b4.innerHTML = ''
-			const bz = new ButtonComponent(b4)
-			bz.setIcon('search')
-			bz.setClass('clickable-icon')
-			bz.setClass('mod-tappable')
-			bz.onClick((e: MouseEvent) => {
-				new SearchModal(this.app, this).open()
-			})
-		}
-
-		const b1 = document.getElementsByClassName('mobile-navbar-action')[2] as HTMLElement
-		if (b1) {
-			const newElem = document.createElement('div')
-			b1.replaceWith(newElem)
-			const b = new ButtonComponent(newElem)
-			b.setIcon('list')
-			b.setClass('clickable-icon')
-			b.setClass('mod-tappable')
-			b.onClick((e: MouseEvent) => {
-				navigateToTaskPage(TASK_LIST_TYPES.incomplete)
-			})
-		}
-		const bn = document.getElementsByClassName('mobile-navbar-action')[1] as HTMLElement
-		if (bn) {
-			const newElem = document.createElement('div')
-			bn.after(newElem)
-			const b = new ButtonComponent(newElem)
-			b.setIcon('home')
-			b.setClass('clickable-icon')
-			b.setClass('mod-tappable')
-			b.onClick((e: MouseEvent) => {
-				navigateToTaskPage(TASK_LIST_TYPES.today)
+		const mobileNav = document.querySelector('.mobile-navbar')
+		if (mobileNav) {
+			new MobileNavBar({
+				target: mobileNav,
+				props: {
+					plugin: this
+				}
 			})
 		}
 
@@ -115,10 +77,6 @@ export default class TaskrPlugin extends Plugin {
 			[TASK_LIST_TYPES.completed]: {
 				icon: 'medal',
 				label: 'Completed (TASKR)'
-			},
-			[TASK_LIST_TYPES.thisWeek]: {
-				icon: 'calendar-clock',
-				label: 'This Week (TASKR)'
 			},
 			[TASK_LIST_TYPES.incomplete]: {
 				icon: 'list',
@@ -263,7 +221,6 @@ export default class TaskrPlugin extends Plugin {
 	onunload() {
 		this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.today)
 		this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.completed)
-		this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.thisWeek)
 		this.app.workspace.detachLeavesOfType(TASK_LIST_TYPES.incomplete)
 	}
 

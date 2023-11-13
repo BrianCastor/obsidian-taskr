@@ -8,3 +8,5 @@ export const allTasksCache = writable<Task[]>([])
 export const allProjectsCache = writable<Project[]>([])
 
 export const allHabitsCache = writable<Habit[]>([])
+
+export const activeViewTypeCache = writable<string | undefined>(undefined)

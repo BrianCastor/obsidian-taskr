@@ -61,11 +61,11 @@
 
 {#if displayAs === 'statistic'}
 	<div style="text-align:center;">
-		<div style={`font-size:18px;display:flex;justify-content:center`}>
+		<div style={`font-size:18px;display:flex;justify-content:center;color:${color}`}>
 			{Math.abs(Math.round(difference * 10) / 10)}
-			{#if difference >= 0}<Icon name="arrow-up" color="lightgreen" />
+			{#if difference >= 0}<Icon name="arrow-up" {color} />
 			{/if}
-			{#if difference < 0}<Icon name="arrow-down" color="pink" />
+			{#if difference < 0}<Icon name="arrow-down" {color} />
 			{/if}
 		</div>
 		<div style="font-size:10px;">

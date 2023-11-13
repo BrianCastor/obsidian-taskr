@@ -106,7 +106,9 @@
 {#key selectedDate}
 	<div>
 		<Container {addBottomPadding}>
-			<div style="display:flex;column-gap:20px;row-gap:10px;margin-bottom:10px;">
+			<div
+				style="display:flex;column-gap:20px;row-gap:10px;margin-bottom:20px;justify-content:center"
+			>
 				<div style="display:flex; flex-direction:column; max-width:120px;width:120px">
 					<div
 						style="height:90px;width:120px;overflow:none;cursor:pointer"
@@ -121,9 +123,7 @@
 					<DailyProgressBar {plugin} />
 					<WeeklyProgressBar {plugin} />
 
-					<div
-						style="display:flex;column-gap:10px;row-gap:10px;justify-content:space-evenly"
-					>
+					<div style="display:flex;column-gap:20px;row-gap:10px;">
 						<ProgressOnSchedule {plugin} displayAs="statistic" timePeriod="all-time" />
 						<DaysToRelaxStat {plugin} />
 					</div>
