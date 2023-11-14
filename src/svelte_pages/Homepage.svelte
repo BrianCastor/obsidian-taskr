@@ -20,6 +20,7 @@
 	import DailyProgressBar from '../svelte/DailyProgressBar.svelte'
 	import DaysToRelaxStat from '../svelte/DaysToRelaxStat.svelte'
 	import { TASK_LIST_TYPES } from '../components/taskListView'
+	import CelebrateIllustration from '../assets/celebrate-illustration.svelte'
 
 	export let plugin: TaskrPlugin
 	export let addBottomPadding: boolean = false
@@ -29,14 +30,28 @@
 	let allHabits: Habit[] = []
 	let allTasks: Task[] = []
 	let tasks: Task[] = []
-	let showComplete = false
+	let showAllTasksCompleted = false
+	let showAllHabitsCompleted = false
 	let showAddMore = false
-
-	let showCompletedTasks = false
+	let showRescheduleOverdue = false
+	let showCompletedItems = false
 
 	allTasksCache.subscribe((ts: Task[]) => {
 		allTasks = ts
 	})
+
+	const rescheduleOverdueToCurrentDay = () => {
+		tasks
+			.filter((t) => t.isOverDueForDate(selectedDate))
+			.map((t) => {
+				t.scheduled_date = selectedDate
+				plugin.fileInterface.createUpdateTask(t)
+			})
+	}
+
+	$: {
+		showRescheduleOverdue = tasks.some((t) => t.isOverDueForDate(selectedDate))
+	}
 
 	$: {
 		// Edit page header
@@ -45,20 +60,20 @@
 	}
 
 	$: {
-		showCompletedTasks = isPast(selectedDate) && !isToday(selectedDate)
+		showCompletedItems = isPast(selectedDate) && !isToday(selectedDate)
+	}
+
+	$: {
+		showAllHabitsCompleted =
+			!showCompletedItems && habits.every((h) => h.isCompleteForPeriodOfDate(selectedDate))
 	}
 
 	$: {
 		const tempTasks = allTasks.filter((task: Task) => {
-			if (
-				task.isOverDueForDate(selectedDate) ||
-				(task.completed_date && isSameDay(selectedDate, task.completed_date)) ||
-				(task.scheduled_date && isSameDay(selectedDate, task.scheduled_date)) ||
-				(task.due_date && isSameDay(selectedDate, task.due_date) && !task.scheduled_date)
-			) {
-				return true
-			}
-			return false
+			const taskDt = task.completed_date ?? task.scheduled_date ?? task.due_date
+			return (
+				task.isOverDueForDate(selectedDate) || (taskDt && isSameDay(selectedDate, taskDt))
+			)
 		})
 		tasks = sortTasksByDate(tempTasks.slice(), false)
 	}
@@ -75,7 +90,8 @@
 				.reduce((a, b) => {
 					return (a ?? 0) + (b ?? 0)
 				}, 0) ?? 0
-		showComplete = tasks.every((t) => t.complete) && completedToday >= dueToday * 60
+		showAllTasksCompleted =
+			tasks.every((t) => t.complete) && completedToday >= dueToday * 60 && !showCompletedItems
 	}
 
 	$: {
@@ -107,7 +123,7 @@
 	<div>
 		<Container {addBottomPadding}>
 			<div
-				style="display:flex;column-gap:15px;row-gap:10px;margin-bottom:20px;justify-content:center"
+				style="display:flex;column-gap:15px;row-gap:10px;margin-bottom:15px;justify-content:center"
 			>
 				<div style="display:flex; flex-direction:column; max-width:100px;width:100px">
 					<div
@@ -130,14 +146,48 @@
 				</div>
 			</div>
 
-			<div style="margin-bottom:10px;">Tasks</div>
-			<div style="margin-left:10px;display:grid;grid-row-gap:12px;padding-bottom:8px;">
-				{#each tasks as task}
-					{#if !showCompletedTasks && !task.complete}
-						<TaskListItem {task} {plugin} />
+			<div
+				style="display:flex;column-gap:10px; margin-bottom:25px;align-items:center;justify-content:space-between"
+			>
+				<div style="display:flex;column-gap:10px">
+					<div
+						class={`filter-toggle ${showCompletedItems && 'selected'}`}
+						on:click={() => (showCompletedItems = true)}
+					>
+						<span>All</span>
+						<span class="caption">{tasks.length + habits.length}</span>
+					</div>
+					<div
+						class={`filter-toggle ${!showCompletedItems && 'selected'}`}
+						on:click={() => (showCompletedItems = false)}
+					>
+						<span>To do</span>
+						<span class="caption"
+							>{tasks.filter((t) => !t.complete).length +
+								habits.filter((h) => !h.isCompleteForPeriodOfDate(selectedDate))
+									.length}</span
+						>
+					</div>
+				</div>
+				<div>
+					{#if showRescheduleOverdue}
+						<button
+							on:click|stopPropagation={() => rescheduleOverdueToCurrentDay()}
+							class="move-overdue-button"
+						>
+							Move overdue to today
+						</button>
 					{/if}
-					{#if showCompletedTasks && task.complete}
-						<TaskListItem {task} {plugin} />
+				</div>
+			</div>
+
+			<div style="display:grid;grid-row-gap:12px;">
+				{#each tasks as task}
+					{#if !task.complete}
+						<TaskListItem {task} {plugin} viewForDate={selectedDate} />
+					{/if}
+					{#if showCompletedItems && task.complete}
+						<TaskListItem {task} {plugin} viewForDate={selectedDate} />
 					{/if}
 				{/each}
 				{#if showAddMore}
@@ -153,35 +203,18 @@
 					</div>
 				{/if}
 			</div>
-			{#if !showCompletedTasks}
-				{#if showComplete}
-					<div
-						style="width:100%;display:flex; align-items:center; row-gap:10px;flex-direction:column"
-					>
-						<Complete />
-						<div style="max-width:300px;font-size:13px;text-align:center">
-							All tasks complete and goal met -- time to relax!
-						</div>
+			{#if showAllTasksCompleted}
+				<div
+					style="width:100%;display:flex; align-items:center; row-gap:10px;flex-direction:column"
+				>
+					<Complete />
+					<div style="max-width:300px;font-size:13px;text-align:center">
+						All tasks complete and goal met -- time to relax!
 					</div>
-				{/if}
-			{/if}
-
-			{#if tasks.filter((t) => t.complete).length > 0 && !showCompletedTasks}
-				<div style="width:100%;display:flex; justify-content:center; margin-top:10px;">
-					<button style="height:30px" on:click={() => (showCompletedTasks = true)}
-						>Show Completed Tasks</button
-					>
-				</div>
-			{/if}
-			{#if showCompletedTasks && isToday(selectedDate)}
-				<div style="width:100%;display:flex;  justify-content:center; margin-top:10px;">
-					<button style="height:30px" on:click={() => (showCompletedTasks = false)}
-						>Show Scheduled Tasks</button
-					>
 				</div>
 			{/if}
 
-			{#if !tasks.length && !showAddMore && !showComplete}
+			{#if !tasks.length && !showAddMore && !showAllTasksCompleted}
 				<div
 					style="width:100%;max-width:100%;display:flex; align-items:center; row-gap:10px;flex-direction:column"
 				>
@@ -190,12 +223,31 @@
 				</div>
 			{/if}
 
-			<div style="margin-bottom:10px;margin-top:15px">Habits</div>
+			<div style="width:100%;display:flex;justify-content:center">
+				<hr style="width:35%;margin-top:20px;margin-bottom:20px" />
+			</div>
 			<div style="display:flex;flex-direction:column;row-gap:12px;">
 				{#each habits as habit}
-					<HabitListItem {habit} {plugin} viewForDate={selectedDate} />
+					{#if showCompletedItems}
+						<div>
+							<HabitListItem {habit} {plugin} viewForDate={selectedDate} />
+						</div>
+					{/if}
+					{#if !showCompletedItems && !habit.isCompleteForPeriodOfDate(selectedDate)}
+						<div>
+							<HabitListItem {habit} {plugin} viewForDate={selectedDate} />
+						</div>
+					{/if}
 				{/each}
 			</div>
+			{#if showAllHabitsCompleted}
+				<div
+					style="width:100%;max-width:100%;display:flex; align-items:center; row-gap:14px;flex-direction:column"
+				>
+					<CelebrateIllustration />
+					<div>All habits completed! Nice work.</div>
+				</div>
+			{/if}
 			{#if !habits.length}
 				<div
 					style="width:100%;max-width:100%;display:flex; align-items:center; row-gap:14px;flex-direction:column"
@@ -210,4 +262,40 @@
 {/key}
 <DateScroller {selectedDate} onSelectDate={(dt) => (selectedDate = dt)} />
 
-<style></style>
+<style>
+	.move-overdue-button {
+		height: 22px;
+		font-size: 11px;
+		text-transform: uppercase;
+		background-color: none;
+		border: none;
+		border-radius: 2px;
+		color: rgb(26, 213, 213);
+		width: auto !important;
+	}
+
+	.filter-toggle {
+		border-radius: 8px;
+		background-color: rgb(50, 50, 50);
+		padding: 5px 10px;
+		display: flex;
+		column-gap: 10px;
+		align-items: center;
+		cursor: pointer;
+		vertical-align: middle;
+	}
+	.filter-toggle:hover {
+		box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.1);
+		transition: 300ms;
+	}
+
+	.filter-toggle > span.caption {
+		font-size: 12px;
+		font-weight: bold;
+	}
+
+	:global(.filter-toggle.selected) {
+		background-color: var(--interactive-accent) !important;
+		color: var(--text-on-accent) !important;
+	}
+</style>

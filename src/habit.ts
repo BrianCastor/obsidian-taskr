@@ -69,6 +69,9 @@ export class Habit {
 	getCompletionsForPeriodOfDate = (dt: Date): number => {
 		return this.completionHistoryIterator(dt).next().value ?? 0
 	}
+	isCompleteForPeriodOfDate = (dt: Date): boolean => {
+		return this.getCompletionsForPeriodOfDate(dt) >= this.quantity
+	}
 
 	habitPeriodIterator = function* (endDate: Date): Generator<{ start: Date; end: Date }> {
 		// Returns the current period that the end date is in as well

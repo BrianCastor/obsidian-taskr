@@ -6,10 +6,12 @@
 	import Checkbox from './Checkbox.svelte'
 	import ProjectSelector from './ProjectSelector.svelte'
 	import { getLeaf } from '../utils'
+	import Icon from './Icon.svelte'
 
 	export let plugin: TaskrPlugin
 	export let task: Task
 	export let onNavigateAway: (() => void) | undefined = undefined
+	export let viewForDate: Date = new Date()
 
 	let expanded: boolean = false
 	let showDeleteConfirm: boolean = false
@@ -94,6 +96,9 @@
 						class={task.complete ? 'containerLi completed' : 'containerLi'}
 						style="text-decoration:none;"
 					>
+						{#if task.isOverDueForDate(viewForDate)}
+							❗
+						{/if}
 						{task.title}
 					</div>
 					{#if task.contentLength && task.contentLength > 0}

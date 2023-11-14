@@ -33,11 +33,13 @@
 
 	$: {
 		if (selectedDate) {
-			document.querySelector('.date-chip.selected')?.scrollIntoView({
-				behavior: 'smooth',
-				block: 'nearest',
-				inline: 'center'
-			})
+			document
+				.querySelector(`[data-date='${format(selectedDate, 'yyyy-MM-dd')}']`)
+				?.scrollIntoView({
+					behavior: 'smooth',
+					block: 'center',
+					inline: 'center'
+				})
 		}
 	}
 
@@ -75,6 +77,7 @@
 				on:touchstart={(e) => {
 					e.stopPropagation()
 				}}
+				data-date={format(dt, 'yyyy-MM-dd')}
 			>
 				<div style="font-size:11px">{format(dt, 'EEE').toLocaleUpperCase()}</div>
 				<div
