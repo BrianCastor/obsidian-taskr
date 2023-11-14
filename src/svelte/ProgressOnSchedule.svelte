@@ -4,7 +4,6 @@
 	import type { Task } from '../task'
 	import { allTasksCache } from '../cache'
 	import { GoalService } from '../goalService'
-	import Icon from './Icon.svelte'
 
 	type TimePeriodOption = 'all-time' | 'week'
 
@@ -44,7 +43,7 @@
 			>{Math.abs(Math.round(difference * 10) / 10)}</span
 		>
 		<div style="flex-grow:1; padding-left:10px;">
-			<span style="font-size:14px;white-space:nowrap"
+			<span style="font-size:14px;white-space:nowrap;"
 				>{`Hour${Math.abs(Math.round(difference * 10) / 10) === 1 ? '' : 's'}`}</span
 			>
 			<br />
@@ -61,7 +60,9 @@
 
 {#if displayAs === 'statistic'}
 	<div style="text-align:center;">
-		<div style={`font-size:18px;display:flex;justify-content:center;color:${color}`}>
+		<div
+			style={`font-size:18px;display:flex;justify-content:center;color:${color};font-weight:bold`}
+		>
 			{Math.abs(Math.round(difference * 10) / 10)}
 		</div>
 		<div style="font-size:10px;">

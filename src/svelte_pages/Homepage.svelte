@@ -204,7 +204,7 @@
 					<div>No habits found.</div>
 				</div>
 			{/if}
-			<div style="height:50px;width:100%;" />
+			<div style="height:150px;width:100%;" />
 		</Container>
 	</div>
 {/key}

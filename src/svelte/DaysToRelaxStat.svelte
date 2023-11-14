@@ -17,7 +17,7 @@
 </script>
 
 <div style="text-align:center;">
-	<div style="font-size:18px">
+	<div style="font-size:18px;font-weight:bold">
 		{daysToRelax}
 		{#if daysToRelax > 0}
 			🌴
