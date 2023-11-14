@@ -6,7 +6,7 @@ import { SearchModal } from './components/searchModal'
 import { FileInterface } from './fileInterface'
 import type { Project } from './project'
 import { SettingsTab, settingsWithDefaults, type ISettings } from './settings'
-import TasksToday from './svelte_pages/TasksToday.svelte'
+import Homepage from './svelte_pages/Homepage.svelte'
 import SingleTask from './svelte_pages/SingleTask.svelte'
 import CompletedTasks from './svelte_pages/CompletedTasks.svelte'
 import type { Task } from './task'
@@ -283,7 +283,7 @@ export default class TaskrPlugin extends Plugin {
 				}
 			})
 		} else if (params.today) {
-			new TasksToday({
+			new Homepage({
 				target: el,
 				props: {
 					plugin: this

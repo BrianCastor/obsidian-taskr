@@ -1,6 +1,6 @@
 import type TaskrPlugin from '../main'
 import { ItemView, WorkspaceLeaf } from 'obsidian'
-import TasksToday from '../svelte_pages/TasksToday.svelte'
+import Homepage from '../svelte_pages/Homepage.svelte'
 import CompletedTasks from '../svelte_pages/CompletedTasks.svelte'
 import AllIncompleteTasks from '../svelte_pages/AllIncompleteTasks.svelte'
 
@@ -42,7 +42,7 @@ export class TaskListView extends ItemView {
 
 	async onOpen(): Promise<void> {
 		if (this.type === TASK_LIST_TYPES.today) {
-			new TasksToday({
+			new Homepage({
 				target: (this as any).contentEl,
 				props: {
 					plugin: this.plugin,
