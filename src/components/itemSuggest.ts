@@ -1,58 +1,44 @@
 import type TaskrPlugin from '../main'
-import {
-	App,
-	PopoverSuggest,
-	Scope,
-	TFile,
-	prepareFuzzySearch,
-	type FuzzyMatch,
-	Platform
-} from 'obsidian'
+import { App, PopoverSuggest, Scope, prepareFuzzySearch, type FuzzyMatch, Platform } from 'obsidian'
 
+interface DataItem {
+	id: string
+	title: string
+}
 /**
  * Might be building on a shaky foundation here. A lot of the base class is undocumented
  */
-export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
+export class ItemSuggest<T extends DataItem> extends PopoverSuggest<FuzzyMatch<T>> {
 	app: App
 	inputEl: HTMLElement
 	plugin: TaskrPlugin
-	onSelect: (file: TFile) => void
+	onSelect: (file: T) => void
+	data: T[] = []
 
 	constructor(
 		app: App,
 		scope: Scope,
 		plugin: TaskrPlugin,
 		inputEl: HTMLElement,
-		onSelect: (file: TFile) => void
+		onSelect: (item: T) => void,
+		data: T[] = []
 	) {
 		super(app, scope)
 		this.app = app
 		this.inputEl = inputEl
 		this.plugin = plugin
 		this.onSelect = onSelect
+		this.data = data
 	}
 
-	getSuggestions(text: string, type: string) {
-		let tfiles: TFile[] = []
-		if (type === 'people') {
-			const peopleDir = this.plugin.settings.PeopleDir
-			tfiles = this.app.vault
-				.getMarkdownFiles()
-				.filter((f: TFile) => f.parent?.name === peopleDir) //TODO, do we need to cache this when creating class
-		} else {
-			const projectsDir = this.plugin.settings.ProjectsDir
-			tfiles = this.app.vault
-				.getMarkdownFiles()
-				.filter((f: TFile) => f.parent?.name === projectsDir)
-		}
-
+	getSuggestions(text: string) {
 		const fuzzy = prepareFuzzySearch(text)
-		const result: FuzzyMatch<TFile>[] = []
-		for (const f of tfiles) {
-			const match = fuzzy(f.basename)
+		const result: FuzzyMatch<T>[] = []
+		for (const item of this.data) {
+			const match = fuzzy(item.title)
 			match &&
 				result.push({
-					item: f,
+					item: item,
 					match
 				})
 		}
@@ -61,8 +47,8 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
 		return result
 	}
 
-	renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
-		let html = value.item.basename
+	renderSuggestion(value: FuzzyMatch<T>, el: HTMLElement) {
+		let html = value.item.title
 		let extraChars = 0
 		value.match.matches.forEach((matchPos) => {
 			const start = extraChars + matchPos[0]
@@ -77,11 +63,11 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
 			extraChars += 7
 		})
 		el.innerHTML = html
-		el.setAttribute('title', value.item.basename)
+		el.setAttribute('title', value.item.title)
 		return el
 	}
 
-	suggestBasedOnText(text: string, type: string) {
+	suggestBasedOnText(text: string) {
 		let rect
 		if (!Platform.isMobileApp) {
 			//@ts-ignore
@@ -92,7 +78,7 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
 			this.reposition(rect)
 		}
 
-		const suggestions = this.getSuggestions(text, type)
+		const suggestions = this.getSuggestions(text)
 
 		if (suggestions.length > 0) {
 			this.open()
@@ -101,7 +87,7 @@ export class FileSuggest extends PopoverSuggest<FuzzyMatch<TFile>> {
 		}
 	}
 
-	selectSuggestion(match: FuzzyMatch<TFile>, evt: MouseEvent | KeyboardEvent): void {
+	selectSuggestion(match: FuzzyMatch<T>, evt: MouseEvent | KeyboardEvent): void {
 		this.onSelect(match.item)
 		evt.preventDefault()
 		this.close()

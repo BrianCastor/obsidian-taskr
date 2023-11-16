@@ -6,12 +6,13 @@
 	import ProjectSelector from './ProjectSelector.svelte'
 	import { allEfforts, getEffort } from '../utils'
 	import { onDestroy, onMount } from 'svelte'
-	import { FileSuggest } from '../components/fileSuggest'
+	import { ItemSuggest } from '../components/itemSuggest'
 	import type { App, TFile } from 'obsidian'
 	import type TaskrPlugin from '../main'
-	import { allTasksCache } from '../cache'
+	import { allProjectsCache, allTasksCache } from '../cache'
 	import { ENGLISH_STOPWORDS } from '../stopwords'
 	import { addDays, differenceInDays } from 'date-fns'
+	import type { Project } from '../project'
 
 	export let close: () => void
 	export let store: (task: Task) => void
@@ -26,11 +27,11 @@
 	let due: Date | undefined
 	let scheduled: Date | undefined
 	let effort: number | undefined
-	let project: string | undefined
+	let project: Project | undefined
 	let completed_date: Date | undefined
 
 	let inputEl: HTMLElement
-	let suggest: FileSuggest | undefined
+	let suggest: ItemSuggest<Project> | undefined
 	let marked: string = ''
 
 	let suggestedTasks: Task[] = []
@@ -206,15 +207,11 @@
 			}
 		}
 
-		const mentions = [...(doc.documentElement.textContent ?? '').matchAll(mentions_re)]
 		const hashtags = [...(doc.documentElement.textContent ?? '').matchAll(hashtags_re)]
-		const currentMention = getCurrentToken(mentions)
 		const currentHashtag = getCurrentToken(hashtags)
 
-		if (currentMention) {
-			suggest?.suggestBasedOnText(currentMention[0].replace('@', ''), 'people')
-		} else if (currentHashtag) {
-			suggest?.suggestBasedOnText(currentHashtag[0].replace('#', ''), 'projects')
+		if (currentHashtag) {
+			suggest?.suggestBasedOnText(currentHashtag[0].replace('#', ''))
 		} else {
 			suggest?.close()
 		}
@@ -254,7 +251,7 @@
 		inputEl.focus()
 	}
 
-	function onSetProject(pj: string | undefined) {
+	function onSetProject(pj: Project | undefined) {
 		project = pj
 		inputEl.focus()
 	}
@@ -287,27 +284,18 @@
 		return text
 	}
 
-	function onSuggestSelect(tfile: TFile) {
-		const backLink = `[[${tfile.basename}]]&nbsp;`
-
+	async function onSuggestSelect(project: Project) {
 		const cursorIndex = getCursorPosition()
 		if (!cursorIndex) return
 
 		const doc = new DOMParser().parseFromString(inputHTML, 'text/html')
 		let textContent = doc.documentElement.textContent ?? ''
 
-		const mentions = [...textContent.matchAll(mentions_re)]
 		const hashtags = [...textContent.matchAll(hashtags_re)]
-
-		const currentMention = getCurrentToken(mentions)
-		if (currentMention) {
-			textContent = replaceToken(currentMention, textContent, backLink)
-		}
-
 		const currentHashtag = getCurrentToken(hashtags)
 		if (currentHashtag) {
 			textContent = replaceToken(currentHashtag, textContent, '')
-			onSetProject(tfile.basename)
+			onSetProject(project)
 		}
 
 		inputHTML = textContent
@@ -343,7 +331,14 @@
 	}
 
 	onMount(() => {
-		suggest = new FileSuggest(app, app.scope, plugin, inputEl, onSuggestSelect)
+		suggest = new ItemSuggest<Project>(
+			app,
+			app.scope,
+			plugin,
+			inputEl,
+			onSuggestSelect,
+			$allProjectsCache
+		)
 		modalEl.addEventListener('click', () => suggest?.close())
 		inputEl.focus()
 	})
