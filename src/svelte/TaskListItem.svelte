@@ -5,8 +5,8 @@
 	import LoeChip from './LOE_Chip.svelte'
 	import Checkbox from './Checkbox.svelte'
 	import ProjectSelector from './ProjectSelector.svelte'
-	import { getLeaf } from '../utils'
-	import Icon from './Icon.svelte'
+	import { getEffort, getLeaf } from '../utils'
+	import type { Project } from '../project'
 
 	export let plugin: TaskrPlugin
 	export let task: Task
@@ -42,7 +42,7 @@
 		return
 	}
 
-	function onSetProject(project: string | undefined) {
+	function onSetProject(project: Project | undefined) {
 		task.project = project
 		plugin.fileInterface.createUpdateTask(task)
 	}
@@ -86,11 +86,11 @@
 <div style={!task.scheduled_date ? 'color:grey !important' : ''} class="task-container">
 	<li on:contextmenu={onClickTaskContainer} style="margin-bottom:5px">
 		<div class="containerDiv" on:click={() => (expanded = !expanded)}>
-			<div style="margin-right:12px;display:flex;align-items:center;">
+			<div style="margin-right:8px;display:flex;align-items:center;">
 				<Checkbox checked={task.complete} onChange={() => onToggleTaskComplete()} />
 			</div>
 			<div style="display:block;flex-grow:1">
-				<div style="display:flex; alignItems:center;flex-wrap:wrap;row-gap:10px;">
+				<div style="display:flex; align-ittems:center;flex-wrap:wrap;row-gap:10px;">
 					<div
 						on:click|stopPropagation={() => navigateToTask()}
 						class={task.complete ? 'containerLi completed' : 'containerLi'}
@@ -100,23 +100,22 @@
 							❗
 						{/if}
 						{task.title}
+						{#if task.contentLength && task.contentLength > 0}
+							<span style="font-size:12px">📄</span>
+						{/if}
 					</div>
-					{#if task.contentLength && task.contentLength > 0}
-						<span style="margin-left:4px;">📄</span>
+				</div>
+				<div style="font-size:12px;color:grey;margin-top:5px;display:flex;column-gap:9px;">
+					{#if task.project}
+						<span>
+							{task.project.icon}
+							{task.project.title}
+						</span>
 					{/if}
-					{#if !expanded}
-						<div style="display: flex; align-items:center; margin-left: 10px">
-							{#if task.effort}
-								<LoeChip effort={task.effort} setEffort={onSetEffort} />
-							{/if}
-							{#if task.project}
-								<ProjectSelector
-									project={task.project}
-									setProject={onSetProject}
-									hideText
-								/>
-							{/if}
-						</div>
+					{#if task.effort}
+						<span style={`color:${getEffort(task.effort)?.color}`}
+							>{getEffort(task.effort)?.icon}</span
+						>
 					{/if}
 				</div>
 			</div>

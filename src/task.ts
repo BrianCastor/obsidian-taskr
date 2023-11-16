@@ -1,4 +1,5 @@
 import { isFuture, startOfDay } from 'date-fns'
+import type { Project } from './project'
 
 export interface ITask {
 	id?: string | undefined
@@ -8,7 +9,7 @@ export interface ITask {
 	completed_date?: Date | undefined
 	created_date?: Date | undefined
 	complete: boolean
-	project?: string | undefined
+	project?: Project | undefined
 	effort?: number | undefined
 	contentLength?: number | undefined
 }
@@ -21,7 +22,7 @@ export class Task implements ITask {
 	completed_date?: Date | undefined
 	created_date?: Date | undefined
 	complete: boolean
-	project?: string | undefined
+	project?: Project
 	effort?: number | undefined
 	contentLength?: number | undefined
 

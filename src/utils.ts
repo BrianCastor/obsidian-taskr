@@ -4,6 +4,7 @@ import { TaskListView } from './components/taskListView'
 import type { DayOfWeek } from './types'
 import { HabitView } from './components/habitView'
 import { activeViewTypeCache } from './cache'
+import { ProjectsView } from './components/projectsView'
 
 export const ALL_DAYS_OF_WEEK: DayOfWeek[] = [
 	'monday',
@@ -76,7 +77,7 @@ export const getEffort = (effort: number | undefined) => {
 export const getLeaf = (): WorkspaceLeaf => {
 	let leaf: WorkspaceLeaf | undefined = undefined
 
-	leaf = [TaskListView, MarkdownView, HabitView]
+	leaf = [TaskListView, MarkdownView, HabitView, ProjectsView]
 		.map((view) => app.workspace.getActiveViewOfType<View>(view))
 		.find((view) => !!view)?.leaf
 

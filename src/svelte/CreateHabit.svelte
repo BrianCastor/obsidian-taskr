@@ -39,7 +39,6 @@
 	const backlinks_re = /\[\[.*?\]\]/g
 
 	const save = () => {
-		console.log('here')
 		const startDt = startDate ?? new Date()
 		const newHabit = new Habit({
 			title: title,

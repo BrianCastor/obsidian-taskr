@@ -35,7 +35,6 @@
 		return temp.toText()
 	}
 	/*async function navigateToHabit(id: string) {
-		console.log(id)
 		const leaf = getLeaf()
 		leaf.open(new HabitView(leaf, plugin, id))
 		app.workspace.revealLeaf(leaf)

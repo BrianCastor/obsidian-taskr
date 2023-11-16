@@ -27,7 +27,6 @@ export class HabitView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
-		console.log(this.id)
 		new HabitPage({
 			target: (this as any).contentEl,
 			props: {

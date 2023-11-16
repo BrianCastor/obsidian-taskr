@@ -17,6 +17,7 @@ import type { Habit } from './habit'
 import { HabitModal } from './components/habitModal'
 import { HabitView } from './components/habitView'
 import MobileNavBar from './svelte/MobileNavBar.svelte'
+import { ProjectsView } from './components/projectsView'
 
 export default class TaskrPlugin extends Plugin {
 	fileInterface: FileInterface
@@ -92,6 +93,11 @@ export default class TaskrPlugin extends Plugin {
 			})
 		})
 
+		this.registerView('projects-view', (leaf) => new ProjectsView(leaf, this))
+		this.addRibbonIcon('target', 'Projects (TASKR)', () => {
+			navigateToTaskPage('projects-view')
+		})
+
 		this.registerView('habit-view', (leaf) => new HabitView(leaf, this, undefined))
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
@@ -144,11 +150,11 @@ export default class TaskrPlugin extends Plugin {
 		)
 
 		this.registerEvent(
-			this.app.vault.on('modify', async (file: TAbstractFile) => {
+			this.app.metadataCache.on('changed', async (file: TAbstractFile) => {
 				if (file instanceof TFile && file.parent?.name == this.settings.ProjectsDir) {
-					const project: Project = this.fileInterface.getProjectFromFile(file)
+					const project: Project = await this.fileInterface.getProjectFromFile(file)
 					allProjectsCache.update((projects) => [
-						...projects.filter((p: Project) => p.title !== project.title),
+						...projects.filter((p: Project) => p.id !== project.id),
 						project
 					])
 				}
@@ -156,28 +162,18 @@ export default class TaskrPlugin extends Plugin {
 		)
 
 		this.registerEvent(
-			this.app.vault.on('delete', async (file: TAbstractFile) => {
+			this.app.metadataCache.on('deleted', async (file: TAbstractFile) => {
 				if (file instanceof TFile && file.path.contains(this.settings.ProjectsDir)) {
-					const project: Project = this.fileInterface.getProjectFromFile(file)
+					const project: Project = await this.fileInterface.getProjectFromFile(file)
 					allProjectsCache.update((projects) =>
-						projects.filter((p: Project) => p.title !== project.title)
+						projects.filter((p: Project) => p.id !== project.id)
 					)
 				}
 			})
 		)
 
 		this.registerEvent(
-			this.app.vault.on('create', async (file: TAbstractFile) => {
-				if (file instanceof TFile && file.parent?.name == this.settings.ProjectsDir) {
-					const project: Project = this.fileInterface.getProjectFromFile(file)
-					allProjectsCache.update((projects) => [...projects, project])
-				}
-			})
-		)
-
-		this.registerEvent(
 			this.app.vault.on('rename', async (file: TAbstractFile, oldPath: string) => {
-				//TODO - rename all project assignments on Tasks to new project name
 				if (file instanceof TFile && file.parent?.name == this.settings.ProjectsDir) {
 					const projects: Project[] = await this.fileInterface.getAllProjects()
 					allProjectsCache.set(projects)

@@ -34,12 +34,22 @@ export class FileInterface {
 			return undefined
 		}
 
+		let project
+		const projectLink = fileMetadata.frontmatterLinks?.find(
+			(link) => link.key === 'project'
+		)?.link
+
+		if (projectLink) {
+			const projectFile = this.getProjectFileById(projectLink)
+			project = projectFile && (await this.getProjectFromFile(projectFile))
+		}
+
 		return new Task({
 			id: frontmatter.id,
 			title: frontmatter.title,
 			due_date: frontmatter.due_date && parse(frontmatter.due_date, 'yyyy-MM-dd', new Date()),
 			complete: frontmatter.complete ? true : false,
-			project: frontmatter.project,
+			project: project,
 			scheduled_date:
 				frontmatter.scheduled_date &&
 				parse(frontmatter.scheduled_date, 'yyyy-MM-dd', new Date()),
@@ -73,6 +83,13 @@ export class FileInterface {
 			await this.app.vault.createFolder(tasksDir)
 		}
 
+		let projectLinkText
+		if (task.project) {
+			const projectFile = this.getProjectFileById(task.project.id)
+			projectLinkText = this.app.metadataCache.fileToLinktext(projectFile, 'projects', true)
+			projectLinkText = `[[${projectLinkText}]]`
+		}
+
 		const taskYaml = {
 			title: task.title,
 			complete: task.complete,
@@ -82,7 +99,7 @@ export class FileInterface {
 			completed_date: task.completed_date && format(task.completed_date, 'yyyy-MM-dd'),
 			created_date: task.created_date && format(task.created_date, 'yyyy-MM-dd'),
 			effort: task.effort,
-			project: task.project
+			project: projectLinkText
 		}
 
 		const existingFile = await this.app.vault.getAbstractFileByPath(fileName)
@@ -114,8 +131,25 @@ export class FileInterface {
 		}
 	}
 
-	getProjectFromFile = (file: TFile) => {
-		return new Project(file.basename)
+	getProjectFromFile = async (file: TFile): Promise<Project> => {
+		const fileMetadata = this.app.metadataCache.getFileCache(file)
+
+		const frontmatter = fileMetadata?.frontmatter
+
+		if (!frontmatter) {
+			//@ts-expect-error
+			return undefined
+		}
+
+		return new Project({
+			id: frontmatter.id,
+			title: frontmatter.title,
+			created_date:
+				frontmatter.created_date &&
+				parse(frontmatter.created_date, 'yyyy-MM-dd', new Date()),
+			category: frontmatter.category,
+			icon: frontmatter.icon
+		})
 	}
 
 	getAllProjectFiles = (): TFile[] => {
@@ -126,15 +160,50 @@ export class FileInterface {
 		return projectFiles
 	}
 
+	getProjectFileById = (id: string): TFile => {
+		const allHabitFiles = this.getAllProjectFiles()
+		const matches = allHabitFiles.filter((t: TFile) => t.basename === id)
+		return matches[0]
+	}
+
 	getAllProjects = async (): Promise<Project[]> => {
 		const projectFiles: TFile[] = this.getAllProjectFiles()
 
 		const projects: Project[] = []
 		for (const tf of projectFiles) {
-			const project = this.getProjectFromFile(tf)
+			const project = await this.getProjectFromFile(tf)
 			projects.push(project)
 		}
 		return projects
+	}
+
+	createUpdateProject = async (project: Project) => {
+		const projectsDir = this.plugin.settings.ProjectsDir
+		const fileName = `${projectsDir}/${project.id}.md`
+
+		if (!(await this.app.vault.adapter.exists(projectsDir))) {
+			await this.app.vault.createFolder(projectsDir)
+		}
+
+		const projectYaml = {
+			title: project.title,
+			id: project.id,
+			icon: project.icon,
+			category: project.category,
+			created_date: project.created_date && format(project.created_date, 'yyyy-MM-dd')
+		}
+
+		const existingFile = await this.app.vault.getAbstractFileByPath(fileName)
+
+		if (existingFile && existingFile instanceof TFile) {
+			this.app.fileManager.processFrontMatter(existingFile, (frontmatter) => {
+				frontmatter = Object.assign(frontmatter, projectYaml)
+			})
+		} else {
+			const yamlString = stringifyYaml(projectYaml)
+			const content = `---\n${yamlString}---\n\n`
+			await this.app.vault.create(fileName, content)
+		}
 	}
 
 	getTaskIdsLinkingToFile = (path: string) => {
