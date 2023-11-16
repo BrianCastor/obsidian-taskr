@@ -12,6 +12,7 @@
 	import QuantityPicker from './QuantityPicker.svelte'
 	import IconPicker from './IconPicker.svelte'
 	import type { LucideIcon } from '../types/lucide'
+	import type { Project } from '../project'
 
 	export let close: () => void
 	export let store: (habit: Habit) => void
@@ -24,7 +25,7 @@
 	let inputHTML = ''
 	let title: string = ''
 	let effort: number | undefined
-	let project: string | undefined
+	let project: Project | undefined
 	let icon: LucideIcon | undefined
 	let recurrence: RRule | undefined
 	let freq: Frequency = Frequency.DAILY
@@ -34,9 +35,7 @@
 	let inputEl: HTMLElement
 	let marked: string = ''
 
-	const mentions_re = /\B@\w*/g
 	const hashtags_re = /\B#\w*/g
-	const backlinks_re = /\[\[.*?\]\]/g
 
 	const save = () => {
 		const startDt = startDate ?? new Date()
@@ -76,8 +75,10 @@
 
 		//Get Effort
 		text.split(' ').map((term: string) => {
-			const matchingEffort = allEfforts.find(
-				(t: any) => t.autoSuggestTerm?.toLowerCase() === term.toLowerCase().trim()
+			const matchingEffort = allEfforts.find((t: any) =>
+				t.autoSuggestTerms.find(
+					(ts: string) => ts.toLowerCase() === term.toLowerCase().trim()
+				)
 			)
 			if (matchingEffort) {
 				effort = matchingEffort.value
@@ -87,19 +88,9 @@
 		})
 
 		textContent = textContent.replace(
-			mentions_re,
-			(x: string) => `<mark class="purple">${x}</mark>`
-		)
-		textContent = textContent.replace(
 			hashtags_re,
 			(x: string) => `<mark class="white">${x}</mark>`
 		)
-		textContent = textContent.replace(
-			backlinks_re,
-			(x: string) => `<mark class="darkblue">${x}</mark>`
-		)
-
-		text = text.replace(mentions_re, '')
 		text = text.replace(hashtags_re, '')
 		title = text.trim()
 
@@ -111,7 +102,7 @@
 		inputEl.focus()
 	}
 
-	function onSetProject(pj: string | undefined) {
+	function onSetProject(pj: Project | undefined) {
 		project = pj
 		inputEl.focus()
 	}
@@ -146,7 +137,7 @@
 		<FrequencyPicker frequency={freq} setFrequency={(f) => (freq = f)} />
 		<LoeChip {effort} setEffort={(e) => (effort = e)} size="small" />
 		<ProjectSelector {project} setProject={onSetProject} size="small" />
-		<IconPicker {icon} setIcon={(iconName) => (icon = iconName)} size="small" />
+		<IconPicker {icon} setIcon={(iconName) => (icon = iconName)} size="small" {plugin} />
 	</div>
 </div>
 

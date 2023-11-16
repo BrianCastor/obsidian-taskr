@@ -1,17 +1,19 @@
 import type TaskrPlugin from '../main'
 import { App, MarkdownView, Modal } from 'obsidian'
-import type { Task } from '../task'
+import type { ITask, Task } from '../task'
 import CreateTask from '../svelte/CreateTask.svelte'
 import type { SvelteComponent } from 'svelte'
 
 export class TaskModal extends Modal {
 	plugin: TaskrPlugin
 	svelteComponent?: SvelteComponent
+	prefill: Partial<ITask> | undefined = {}
 
-	constructor(app: App, plugin: TaskrPlugin) {
+	constructor(app: App, plugin: TaskrPlugin, prefill: Partial<ITask> | undefined = {}) {
 		super(app)
 		this.plugin = plugin
 		this.svelteComponent = undefined
+		this.prefill = prefill
 	}
 
 	onOpen = (): void => {
@@ -28,7 +30,8 @@ export class TaskModal extends Modal {
 				store: this.onSave,
 				app: this.app,
 				plugin: this.plugin,
-				modalEl
+				modalEl,
+				prefill: this.prefill
 			}
 		})
 	}

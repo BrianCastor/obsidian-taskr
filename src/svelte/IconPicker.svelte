@@ -1,27 +1,26 @@
 <script lang="ts">
-	import { LUCIDE_ICONS, type LucideIcon } from '../types/lucide'
-	import { showDropdownMenu } from '../components/DropdownMenu'
+	import type { LucideIcon } from '../types/lucide'
 	import Icon from './Icon.svelte'
+	import { IconPickerModal } from '../components/iconPickerModal'
+	import type TaskrPlugin from '../main'
 
 	export let icon: LucideIcon | undefined
 	export let setIcon: (icon: LucideIcon) => void
 	export let size: 'small' | 'large' = 'small'
+	export let plugin: TaskrPlugin
 
 	let container: HTMLDivElement
-	let options = LUCIDE_ICONS.map((icon: LucideIcon) => {
-		return {
-			label: icon,
-			value: icon,
-			onClick: () => setIcon(icon)
-		}
-	})
+
+	const showIconPickerModal = () => {
+		new IconPickerModal(plugin.app, plugin, (i: LucideIcon) => setIcon(i)).open()
+	}
 </script>
 
 <div
 	class={`chip-container ${size}`}
 	style={`color:grey}`}
 	bind:this={container}
-	on:click|stopPropagation={() => showDropdownMenu(options, container)}
+	on:click|stopPropagation={() => showIconPickerModal()}
 >
 	<em style="margin-right:8px; color:grey;">ICON</em>
 	<div style="max-height:12px;height:12px;"><Icon name={icon ?? 'activity'} /></div>

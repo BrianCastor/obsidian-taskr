@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { parse as NLPParse } from 'chrono-node'
-	import { Task } from '../task'
+	import { Task, type ITask } from '../task'
 	import DateChip from './DateChip.svelte'
 	import LoeChip from './LOE_Chip.svelte'
 	import ProjectSelector from './ProjectSelector.svelte'
@@ -19,15 +19,16 @@
 	export let app: App
 	export let plugin: TaskrPlugin
 	export let modalEl: any
+	export let prefill: Partial<ITask> | undefined
 
 	//TODO - this all could use a refactor
 
 	let inputHTML = ''
 	let title: string = ''
 	let due: Date | undefined
-	let scheduled: Date | undefined
+	let scheduled: Date | undefined = prefill?.scheduled_date
 	let effort: number | undefined
-	let project: Project | undefined
+	let project: Project | undefined = prefill?.project
 	let completed_date: Date | undefined
 
 	let inputEl: HTMLElement
@@ -119,8 +120,10 @@
 
 		//Get Effort
 		text.split(' ').map((term: string) => {
-			const matchingEffort = allEfforts.find(
-				(t: any) => t.autoSuggestTerm?.toLowerCase() === term.toLowerCase().trim()
+			const matchingEffort = allEfforts.find((t: any) =>
+				t.autoSuggestTerms.find(
+					(ts: string) => ts.toLowerCase() === term.toLowerCase().trim()
+				)
 			)
 			if (matchingEffort) {
 				effort = matchingEffort.value

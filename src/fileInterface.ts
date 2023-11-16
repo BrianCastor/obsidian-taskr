@@ -241,6 +241,16 @@ export class FileInterface {
 			return undefined
 		}
 
+		let project
+		const projectLink = fileMetadata.frontmatterLinks?.find(
+			(link) => link.key === 'project'
+		)?.link
+
+		if (projectLink) {
+			const projectFile = this.getProjectFileById(projectLink)
+			project = projectFile && (await this.getProjectFromFile(projectFile))
+		}
+
 		return new Habit({
 			id: frontmatter.id,
 			title: frontmatter.title,
@@ -250,7 +260,7 @@ export class FileInterface {
 			created_date:
 				frontmatter.created_date &&
 				parse(frontmatter.created_date, 'yyyy-MM-dd', new Date()),
-			project: frontmatter.project,
+			project: project,
 			completion_dates: (frontmatter.completion_dates ?? '')
 				.split(',')
 				.filter((val: string) => val !== '')
@@ -290,6 +300,13 @@ export class FileInterface {
 			await this.app.vault.createFolder(habitsDir)
 		}
 
+		let projectLinkText
+		if (habit.project) {
+			const projectFile = this.getProjectFileById(habit.project.id)
+			projectLinkText = this.app.metadataCache.fileToLinktext(projectFile, 'projects', true)
+			projectLinkText = `[[${projectLinkText}]]`
+		}
+
 		const habitYaml = {
 			title: habit.title,
 			id: habit.id,
@@ -297,7 +314,7 @@ export class FileInterface {
 			recurrence: habit.recurrence.toString(),
 			quantity: habit.quantity,
 			effort: habit.effort,
-			project: habit.project,
+			project: projectLinkText,
 			completion_dates: habit.completion_dates
 				.map((dt) => format(dt, 'yyyy-MM-dd'))
 				.join(','),

@@ -1,6 +1,7 @@
 import { isAfter, isBefore, isEqual } from 'date-fns'
 import type { RRule } from 'rrule'
 import type { LucideIcon } from './types/lucide'
+import type { Project } from './project'
 
 export interface IHabitIn {
 	id?: string
@@ -9,7 +10,7 @@ export interface IHabitIn {
 	quantity: number
 	created_date?: Date
 	effort: number
-	project?: string
+	project?: Project
 	completion_dates?: Date[]
 	icon?: LucideIcon
 }
@@ -21,7 +22,7 @@ export class Habit {
 	quantity: number
 	created_date: Date
 	effort: number
-	project: string | undefined
+	project: Project | undefined
 	icon: LucideIcon
 
 	// Track from Task completions or track internal completions?

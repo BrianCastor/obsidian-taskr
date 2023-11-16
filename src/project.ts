@@ -1,6 +1,4 @@
-import { allTasksCache } from './cache'
 import type { Task } from './task'
-import { get } from 'svelte/store'
 
 export interface IProjectIn {
 	id?: string
@@ -25,40 +23,49 @@ export class Project {
 		this.created_date = data.created_date ?? new Date()
 	}
 
-	getTasks = (): Task[] => {
-		const projectFilePath = 'projects/id'
+	getTasks = (taskCache: Task[]): Task[] => {
+		const projectFilePath = `projects/${this.id}.md`
 		const taskIdsLinkingToThisFile = Object.entries(app.metadataCache.resolvedLinks ?? {})
-			.filter(([sourceFile, targetFiles]: [string, Record<string, number>]) =>
-				Object.keys(targetFiles).includes(projectFilePath)
-			)
+			.filter(([sourceFile, targetFiles]: [string, Record<string, number>]) => {
+				return Object.keys(targetFiles).includes(projectFilePath)
+			})
 			.map(([sourceFile, targetFiles]) => sourceFile)
-			.filter((sourceFile) => sourceFile.startsWith('tasks'))
-			.map((tf) => tf.replace('tasks/', ''))
+			.filter((sourceFile) => sourceFile.startsWith('tasks/'))
+			.map((tf) => tf.replace('tasks/', '').replace('.md', ''))
 
-		const tasks: Task[] = get(allTasksCache).filter((t) =>
-			taskIdsLinkingToThisFile.includes(t.id ?? '')
-		)
+		const tasks: Task[] = taskCache.filter((t) => taskIdsLinkingToThisFile.includes(t.id ?? ''))
 
 		return tasks
 	}
 
-	getProgress = (): number => {
-		const tasks = this.getTasks()
-		if (tasks.length === 0) return 0
-
-		const hoursCompleted =
-			tasks
-				.filter((t) => t.complete)
-				.map((t) => t.effort)
-				.reduce((a: number, b: number) => a + b, 0) ?? 0
-		const hoursTotal =
-			tasks.map((t) => t.effort).reduce((a: number, b: number) => a + b, 0) ?? 0
-
-		return hoursCompleted / hoursTotal
+	getTotals = (taskCache: Task[]): { complete: number; total: number; incomplete: number } => {
+		return this.getTasks(taskCache).reduce(
+			(res, task) => {
+				res[task.complete ? 'complete' : 'incomplete'] += 1
+				res.total += 1
+				return res
+			},
+			{ complete: 0, total: 0, incomplete: 0 }
+		)
 	}
 
-	isComplete = () => {
-		return this.getProgress() >= 1
+	getHourTotals = (
+		taskCache: Task[]
+	): { complete: number; total: number; incomplete: number } => {
+		const res = this.getTasks(taskCache).reduce(
+			(res, task) => {
+				res[task.complete ? 'complete' : 'incomplete'] += task.effort ?? 0
+				res.total += task.effort ?? 0
+				return res
+			},
+			{ complete: 0, total: 0, incomplete: 0 }
+		)
+
+		res.total = res.total / 60
+		res.complete = res.complete / 60
+		res.incomplete = res.incomplete / 60
+
+		return res
 	}
 
 	createId() {
