@@ -37,6 +37,14 @@
 
 <div class="mobile-navbar-actions">
 	<button
+		class={`mobile-navbar-action clickable-icon mod-tappable ${
+			activeViewType === 'projects-view' && 'mod-cta'
+		}`}
+		on:click={() => navigateToTaskPage('projects-view')}
+	>
+		<Icon name="target" />
+	</button>
+	<button
 		class={`mobile-navbar-action clickable-icon mod-tappable`}
 		on:click={() => new SearchModal(plugin.app, this).open()}
 	>
